@@ -1,3 +1,0 @@
-/run/media/silverly/DATA/Workspace CLion/iVy/build/CMakeFiles/rebuild_cache.dir
-/run/media/silverly/DATA/Workspace CLion/iVy/build/CMakeFiles/edit_cache.dir
-/run/media/silverly/DATA/Workspace CLion/iVy/build/CMakeFiles/iVy.dir
