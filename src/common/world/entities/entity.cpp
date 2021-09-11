@@ -7,16 +7,17 @@
 
 #include "entity.h"
 
-entity::entity() :
+
+Entity::Entity() :
 		_location { }, _extraPosition { _location.position }, _extraRotation {
 				_location.rotationSpeed } {
 }
 
-entity::entity(Location l) :
+Entity::Entity(Location l) :
 		_location(l), _extraPosition { l.position }, _extraRotation { l.rotation } {
 }
 
-void entity::fastUpdate() {
+void Entity::fastUpdate() {
 	// Approximatif, mais fonctionnel
 	_extraPosition += (_location.position - _extraPosition) * FIXED_RENDER_TIME
 			/ FIXED_TICK_TIME;
@@ -24,42 +25,42 @@ void entity::fastUpdate() {
 			/ FIXED_TICK_TIME;
 }
 
-void entity::fixedUpdate() {
+void Entity::fixedUpdate() {
 	// Physics here
 	_location.position += _location.speed * glm::vec3(FIXED_TICK_TIME); // Magic value!
 	_location.rotation += _location.rotationSpeed * glm::vec3(FIXED_TICK_TIME);
 }
 
-void entity::lock() {
+void Entity::lock() {
 	_mutex.lock();
 }
 
-void entity::unlock() {
+void Entity::unlock() {
 	_mutex.unlock();
 }
 
-const Location& entity::getLocation() const {
+const Location& Entity::getLocation() const {
 	return _location;
 }
 
-const glm::vec3& entity::getPosition() const {
+const glm::vec3& Entity::getPosition() const {
 	return _location.position;
 }
-const glm::vec3& entity::getRotation() const {
+const glm::vec3& Entity::getRotation() const {
 	return _location.rotation;
 }
 
-const glm::vec3& entity::getSpeed() const {
+const glm::vec3& Entity::getSpeed() const {
 	return _location.speed;
 }
-void entity::setSpeed(glm::vec3 &speed) {
+void Entity::setSpeed(glm::vec3 &speed) {
 	_location.speed = speed;
 }
 
-const glm::vec3& entity::getRotationSpeed() const {
+const glm::vec3& Entity::getRotationSpeed() const {
 	return _location.rotationSpeed;
 }
-void entity::setRotationSpeed(glm::vec3 &rotationSpeed) {
+void Entity::setRotationSpeed(glm::vec3 &rotationSpeed) {
 	_location.rotationSpeed = rotationSpeed;
 }
 

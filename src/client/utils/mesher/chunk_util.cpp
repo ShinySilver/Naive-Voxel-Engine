@@ -5,10 +5,8 @@
  *      Author: silverly
  */
 
-#include "ChunkUtil.h"
+#include "chunk_util.h"
 
-#include <glm/detail/type_vec3.hpp>
-#include <glm/ext/vector_float3.hpp>
 #include <initializer_list>
 #include <iostream>
 #include <ostream>

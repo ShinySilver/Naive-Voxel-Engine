@@ -8,19 +8,17 @@
 #ifndef WORLD_ENTITY_ENTITYUNIFORMVOXEL_H_
 #define WORLD_ENTITY_ENTITYUNIFORMVOXEL_H_
 
-#include "../../../../libs/glm/glm/ext/matrix_float4x4.hpp"
-#include "../../../../libs/glm/glm/vec3.hpp"
-#include "../../../../libs/glm/glm/vec4.hpp"
-#include "../IEntity.h"
+#include <glm/glm/vec3.hpp>
+#include "entity.h"
 
 /*
  *
  */
-class EntityUniformVoxel: public IEntity {
+class EntityUniformVoxel: public Entity {
 public:
 	EntityUniformVoxel(const glm::vec3 &position, const glm::vec4 &color);
 	EntityUniformVoxel(const glm::vec3 &position, const glm::vec3 &color);
-	using IEntity::IEntity;
+	using Entity::Entity;
 	virtual void preload() override;
 	virtual void draw(glm::mat4&) override;
 	virtual void unload() override;

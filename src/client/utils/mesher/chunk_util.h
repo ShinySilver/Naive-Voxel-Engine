@@ -9,9 +9,7 @@
 #define WORLD_DATA_CHUNKUTIL_H_
 
 #include <vector>
-
-#include "../../../libs/glm/glm/vec2.hpp"
-#include "../../../libs/glm/glm/vec3.hpp"
+#include <glm/glm/vec3.hpp>
 
 /*
  *

@@ -11,13 +11,9 @@
 #include <iostream>
 #include <iterator>
 #include <utility>
+#include <freetype/freetype.h>
+#include <glm/glm/ext/matrix_float4x4.hpp>
 
-#include "../../../libs/glm/glm/detail/type_vec2.hpp"
-#include "../../../libs/glm/glm/ext/matrix_clip_space.hpp"
-#include "../../../libs/glm/glm/ext/matrix_float4x4.hpp"
-#include "../../../libs/glm/glm/fwd.hpp"
-#include "../../../libs/glm/glm/vec3.hpp"
-#include "../../client/Window.h"
 #include "../loaders/shader_loader.h"
 
 GLuint TextRenderer::_programId = 0;

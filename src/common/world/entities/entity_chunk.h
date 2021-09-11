@@ -9,17 +9,14 @@
 #define WORLD_ENTITY_ENTITYCHUNK_H_
 
 #include <GL/glew.h>
-#include <glm/ext/matrix_float4x4.hpp>
-#include <glm/vec3.hpp>
 
-#include "../../utils/Location.h"
-#include "../data/ChunkUtil.h"
 #include "entity.h"
+#include "../../../client/utils/mesher/chunk_util.h"
 
 /*
  *
  */
-class EntityChunk: public IEntity {
+class EntityChunk: public Entity {
 public:
 	EntityChunk(ChunkUtil::BasicChunk*);
 	EntityChunk(ChunkUtil::BasicChunk*, Location);

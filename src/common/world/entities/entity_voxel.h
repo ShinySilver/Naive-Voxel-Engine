@@ -9,15 +9,13 @@
 #define WORLD_ENTITY_ENTITYVOXEL_H_
 
 #include <GL/glew.h>
-
-#include "../../../../libs/glm/glm/ext/matrix_float4x4.hpp"
-#include "../IEntity.h"
+#include "entity.h"
 
 /*
  *
  */
-class EntityVoxel: public IEntity {
-	using IEntity::IEntity;
+class EntityVoxel: public Entity {
+	using Entity::Entity;
 	virtual void preload() override;
 	virtual void draw(glm::mat4&) override;
 	virtual void unload() override;

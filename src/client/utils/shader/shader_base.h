@@ -10,14 +10,6 @@
 
 #include <GL/glew.h>
 
-#include "../../../libs/glm/glm/detail/type_mat4x4.hpp"
-#include "../../../libs/glm/glm/detail/type_vec3.hpp"
-#include "../../../libs/glm/glm/ext/matrix_transform.hpp"
-#include "../../../libs/glm/glm/gtc/type_ptr.hpp"
-#include "../../../libs/glm/glm/vec3.hpp"
-#include "../../client/Camera.h"
-#include "../../client/Client.h"
-
 namespace ShaderBase {
 
 inline void loadMVP(GLuint matrixID, glm::mat4 &base, glm::vec3 &position,

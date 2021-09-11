@@ -6,16 +6,12 @@
  */
 
 #include "entity_voxel.h"
-
-#include <glm/ext/vector_float2.hpp>
-#include <glm/ext/vector_float3.hpp>
+#include "../../../client/utils/loaders/shader_loader.h"
+#include "../../../client/utils/loaders/texture_loader.h"
+#include "../../../client/utils/loaders/obj_loader.h"
+#include "../../../client/utils/shader/shader_base.h"
 #include <iostream>
 #include <vector>
-
-#include "../../../utils/loaders/ObjLoader.h"
-#include "../../../utils/loaders/ShaderLoader.h"
-#include "../../../utils/loaders/TextureLoader.h"
-#include "../../../utils/shader/ShaderBase.h"
 
 void EntityVoxel::preload() {
 	std::cout << "Preloading voxel.\n";

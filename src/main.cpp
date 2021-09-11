@@ -6,6 +6,7 @@
 #include "client/context.h"
 #include "client/client.h"
 #include "server/server.h"
+#include "client/utils/mesher/chunk_util.h"
 
 // settings
 const unsigned int SCR_WIDTH = 800;

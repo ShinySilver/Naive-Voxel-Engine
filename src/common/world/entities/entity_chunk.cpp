@@ -7,26 +7,24 @@
 
 #include "entity_chunk.h"
 
+#include "../../../client/utils/loaders/obj_loader.h"
+#include "../../../client/utils/shader/shader_base.h"
+#include "../../../client/utils/loaders/shader_loader.h"
+#include "../../utils/location.h"
+#include "../../../client/utils/mesher/chunk_util.h"
+
 #include <iostream>
 #include <vector>
-
-#include <GL/glew.h>
-#include <glm/ext/vector_float2.hpp>
-#include <glm/ext/vector_float3.hpp>
-#include <glm/fwd.hpp>
-
-#include "../../utils/loaders/ObjLoader.h"
-#include "../../utils/loaders/ShaderLoader.h"
-#include "../../utils/Location.h"
-#include "../../utils/shader/ShaderBase.h"
+#include <glm/glm/vec3.hpp>
+#include <glm/glm/ext/matrix_float4x4.hpp>
 
 EntityChunk::EntityChunk(ChunkUtil::BasicChunk *chunk) :
-		IEntity::IEntity { } {
+		Entity::Entity { } {
 	_chunk = chunk;
 }
 
 EntityChunk::EntityChunk(ChunkUtil::BasicChunk *chunk, Location loc) :
-		IEntity::IEntity { loc } {
+		Entity::Entity { loc } {
 	_chunk = chunk;
 }
 

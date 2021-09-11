@@ -8,7 +8,7 @@
 #ifndef UTILS_SHADER_ISHADER_H_
 #define UTILS_SHADER_ISHADER_H_
 
-class IShader {
+class Shader {
 public:
 	IShader() = default;
 	virtual ~IShader() = default;

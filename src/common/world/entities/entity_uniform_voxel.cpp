@@ -6,17 +6,17 @@
  */
 
 #include "entity_uniform_voxel.h"
+#include "../../../client/utils/loaders/obj_loader.h"
+#include "../../../client/utils/shader/shader_base.h"
+#include "../../../client/utils/loaders/shader_loader.h"
+#include "../../utils/location.h"
 
 #include <iostream>
 #include <vector>
-
-#include "../../../../libs/glm/glm/detail/type_vec4.hpp"
-#include "../../../../libs/glm/glm/ext/matrix_float4x4.hpp"
-#include "../../../../libs/glm/glm/gtc/type_ptr.hpp"
-#include "../../../../libs/glm/glm/vec2.hpp"
-#include "../../../utils/loaders/ObjLoader.h"
-#include "../../../utils/loaders/ShaderLoader.h"
-#include "../../../utils/shader/ShaderBase.h"
+#include <glm/glm/vec3.hpp>
+#include <glm/glm/vec4.hpp>
+#include <glm/glm/vec2.hpp>
+#include <glm/glm/ext/matrix_float4x4.hpp>
 
 static GLuint vertexArrayID, programID, vertexBuffer, uvBuffer, matrixID,
 		colorID;
@@ -24,12 +24,12 @@ static int verticeBufferSize;
 
 EntityUniformVoxel::EntityUniformVoxel(const glm::vec3 &position,
 		const glm::vec4 &color) :
-		IEntity { Location { position } } { // Wololo c'est moche
+		Entity { Location { position } } { // Wololo c'est moche
 	_color = color;
 }
 EntityUniformVoxel::EntityUniformVoxel(const glm::vec3 &position,
 		const glm::vec3 &color) :
-		IEntity { Location { position } } { // Wololo c'est tjrs aussi moche
+		Entity { Location { position } } { // Wololo c'est tjrs aussi moche
 	_color = glm::vec4(color, 1.0);
 }
 

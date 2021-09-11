@@ -9,15 +9,18 @@
 #define WORLD_ENTITY_IENTITY_H_
 
 #include <mutex>
+#include <glm/glm/vec3.hpp>
+#include <glm/glm/ext/matrix_float4x4.hpp>
+#include "../../utils/location.h"
 
 #define FIXED_TICK_TIME (1/20.0f)
 #define FIXED_RENDER_TIME (1/60.0f)
 
-class entity {
+class Entity {
 public:
-	entity();
-	entity(glm::vec3);
-	virtual ~entity() = default;
+	Entity();
+	Entity(Location);
+	virtual ~Entity() = default;
 
 	/**
 	 * Those are specific to each entity

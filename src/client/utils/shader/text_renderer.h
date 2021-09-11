@@ -13,13 +13,10 @@
 #include <string>
 
 #include <ft2build.h>
-#include FT_FREETYPE_H
+#include <glm/glm/vec3.hpp>
+#include <glm/glm/ext/vector_int2.hpp>
 
-#include "../../../libs/freetype-2.10.1/include/freetype/ftimage.h"
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include "freetype/ftimage.h"
 
 /*
  *
