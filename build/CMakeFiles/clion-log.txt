@@ -1,0 +1,4 @@
+/opt/clion/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" "/run/media/silverly/DATA/Workspace CLion/iVy"
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /run/media/silverly/DATA/Workspace CLion/iVy/build
