@@ -5,5 +5,7 @@ build
 *.cmake
 tags
 *.taghl
+*.cbp
+Testing
 
 
