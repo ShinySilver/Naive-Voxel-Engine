@@ -3,4 +3,7 @@ CMakeFiles
 Makefile
 build
 *.cmake
+tags
+*.taghl
+
 
