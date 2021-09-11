@@ -5,6 +5,7 @@
 
 #include "client/context.h"
 #include "client/client.h"
+#include "server/server.h"
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -22,10 +23,15 @@ int main()
         return -1;
     }
 
+    server::start();
+
     /**
      * render loop
      */
     client::tick(window);
+
+    server::stop();
+    server::join();
 
     /**
      * close all opened buffers

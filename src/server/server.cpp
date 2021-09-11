@@ -7,20 +7,35 @@
 #include <GLFW/glfw3.h>
 #include <atomic>
 #include <thread>
-#include <../common/world.h>
+//#include "../common/world.h"
 
 #include "server.h"
 
 namespace server{
     namespace{
-        World world;
         std::atomic_bool shutting_down;
-    }
-    void tick(World &world){
-        while (!shutting_down)
-        {
+        std::thread s;
 
+        void tick(){
+            while (!shutting_down)
+            {
+
+            }
+            std::cout << "Server shut down.";
         }
-        std::cout("Server shut down.")
+    }
+
+    void start(){
+        s = std::thread(tick);
+    }
+
+    void stop(){
+        shutting_down = true;
+    }
+
+    void join(){
+        if(s.joinable()){
+            s.join();
+        }
     }
 }

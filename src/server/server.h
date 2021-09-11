@@ -7,7 +7,9 @@
 
 
 namespace server {
-    void tick();
+    void start();
+    void stop();
+    void join();
 };
 
 

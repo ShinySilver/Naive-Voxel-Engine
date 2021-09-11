@@ -7,13 +7,6 @@
 
 #include "entity.h"
 
-#include "../../../libs/glm/glm/detail/type_vec3.hpp"
-#include "../../../libs/glm/glm/ext/matrix_transform.hpp"
-#include "../../../libs/glm/glm/ext/quaternion_transform.hpp"
-#include "../../../libs/glm/glm/gtc/type_ptr.hpp"
-#include "../../client/Camera.h"
-#include "../../client/Client.h"
-
 entity::entity() :
 		_location { }, _extraPosition { _location.position }, _extraRotation {
 				_location.rotationSpeed } {

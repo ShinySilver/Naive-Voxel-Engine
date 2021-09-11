@@ -10,17 +10,13 @@
 
 #include <mutex>
 
-#include "../../../libs/glm/glm/ext/matrix_float4x4.hpp"
-#include "../../../libs/glm/glm/vec3.hpp"
-#include "../../utils/Location.h"
-
 #define FIXED_TICK_TIME (1/20.0f)
 #define FIXED_RENDER_TIME (1/60.0f)
 
 class entity {
 public:
 	entity();
-	entity(Location);
+	entity(glm::vec3);
 	virtual ~entity() = default;
 
 	/**
