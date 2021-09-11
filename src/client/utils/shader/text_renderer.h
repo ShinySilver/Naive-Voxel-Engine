@@ -8,7 +8,9 @@
 #ifndef UTILS_SHADER_TEXTRENDERER_H_
 #define UTILS_SHADER_TEXTRENDERER_H_
 
-#include <GL/glew.h>
+#ifndef __gl_h_
+#include <glad/glad.h>
+#endif
 #include <map>
 #include <string>
 

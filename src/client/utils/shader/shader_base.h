@@ -8,7 +8,11 @@
 #ifndef UTILS_SHADER_SHADERBASE_H_
 #define UTILS_SHADER_SHADERBASE_H_
 
-#include <GL/glew.h>
+#ifndef __gl_h_
+#include <glad/glad.h>
+#endif
+#include <glm/glm/gtx/matrix_transform_2d.hpp>
+#include <glm/glm/gtc/type_ptr.hpp>
 
 namespace ShaderBase {
 

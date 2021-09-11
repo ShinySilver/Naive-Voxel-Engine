@@ -13,6 +13,7 @@
 #include <utility>
 #include <freetype/freetype.h>
 #include <glm/glm/ext/matrix_float4x4.hpp>
+#include <glm/glm/gtc/type_ptr.hpp>
 
 #include "../loaders/shader_loader.h"
 

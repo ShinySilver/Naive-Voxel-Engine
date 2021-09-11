@@ -8,7 +8,9 @@
 #ifndef WORLD_ENTITY_ENTITYCHUNK_H_
 #define WORLD_ENTITY_ENTITYCHUNK_H_
 
-#include <GL/glew.h>
+#ifndef __gl_h_
+#include <glad/glad.h>
+#endif
 
 #include "entity.h"
 #include "../../../client/utils/mesher/chunk_util.h"

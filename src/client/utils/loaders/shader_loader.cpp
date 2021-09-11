@@ -1,14 +1,12 @@
+#ifndef __gl_h_
+#include <glad/glad.h>
+#endif
 
 #include <fstream>
 #include <cstdio>
 #include <iostream>
 #include <string>
 #include <vector>
-
-using namespace std;
-
-#include <stdlib.h>
-#include <string.h>
 
 #include "shader_loader.h"
 

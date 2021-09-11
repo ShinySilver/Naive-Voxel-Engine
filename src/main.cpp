@@ -1,6 +1,8 @@
 #include <iostream>
 
+#ifndef __gl_h_
 #include <glad/glad.h>
+#endif
 #include <GLFW/glfw3.h>
 
 #include "client/context.h"

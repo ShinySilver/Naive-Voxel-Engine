@@ -17,6 +17,7 @@
 #include <glm/glm/vec4.hpp>
 #include <glm/glm/vec2.hpp>
 #include <glm/glm/ext/matrix_float4x4.hpp>
+#include <glm/glm/gtc/type_ptr.hpp>
 
 static GLuint vertexArrayID, programID, vertexBuffer, uvBuffer, matrixID,
 		colorID;

@@ -364,7 +364,7 @@
 #elif GLM_ARCH & GLM_ARCH_SSE2_BIT
 #	include <emmintrin.h>
 #elif GLM_ARCH & GLM_ARCH_NEON_BIT
-#	include "neon.h"
+#	include <arm_neon.h>
 #endif//GLM_ARCH
 
 #if GLM_ARCH & GLM_ARCH_SSE2_BIT

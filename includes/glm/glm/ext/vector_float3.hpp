@@ -2,7 +2,8 @@
 /// @file glm/ext/vector_float3.hpp
 
 #pragma once
-#include "../detail/type_vec3.hpp"
+
+#include "../detail/qualifier.hpp"
 
 namespace glm
 {
