@@ -1,1 +1,0 @@
-/usr/bin/c++ -g CMakeFiles/iVy.dir/src/client/client.cpp.o CMakeFiles/iVy.dir/src/client/context.cpp.o CMakeFiles/iVy.dir/src/common/world/entities/entity.cpp.o CMakeFiles/iVy.dir/src/common/world/entities/entity_cube.cpp.o CMakeFiles/iVy.dir/src/main.cpp.o CMakeFiles/iVy.dir/src/server/server.cpp.o CMakeFiles/iVy.dir/libs/glad/glad.c.o -o iVy  -lglfw -lpthread -ldl 
