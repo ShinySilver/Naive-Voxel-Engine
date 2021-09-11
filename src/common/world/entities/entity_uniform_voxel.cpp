@@ -5,7 +5,7 @@
  *      Author: silverly
  */
 
-#include "EntityUniformVoxel.h"
+#include "entity_uniform_voxel.h"
 
 #include <iostream>
 #include <vector>

@@ -14,7 +14,7 @@
 
 #include "../../utils/Location.h"
 #include "../data/ChunkUtil.h"
-#include "IEntity.h"
+#include "entity.h"
 
 /*
  *

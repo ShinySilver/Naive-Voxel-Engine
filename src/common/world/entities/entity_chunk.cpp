@@ -5,7 +5,7 @@
  *      Author: silverly
  */
 
-#include "EntityChunk.h"
+#include "entity_chunk.h"
 
 #include <iostream>
 #include <vector>

@@ -1,5 +1,5 @@
 /*
- * IEntity.h
+ * entity.h
  *
  *  Created on: 29 avr. 2020
  *      Author: silverly
@@ -17,11 +17,11 @@
 #define FIXED_TICK_TIME (1/20.0f)
 #define FIXED_RENDER_TIME (1/60.0f)
 
-class IEntity {
+class entity {
 public:
-	IEntity();
-	IEntity(Location);
-	virtual ~IEntity() = default;
+	entity();
+	entity(Location);
+	virtual ~entity() = default;
 
 	/**
 	 * Those are specific to each entity
