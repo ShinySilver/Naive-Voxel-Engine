@@ -21,11 +21,12 @@ namespace server{
             {
 
             }
-            std::cout << "Server shut down.";
+            std::cout << "Server shutting down." << std::endl;
         }
     }
 
     void start(){
+        std::cout << "Server starting." << std::endl;
         s = std::thread(tick);
     }
 

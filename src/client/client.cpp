@@ -15,12 +15,15 @@ namespace client{
 		// -----------------------------------------------------------------------------------------
 		void processInput(GLFWwindow *window)
         {
-            if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+                std::cout << "User pressed Escape. Client will now exit." << std::endl;
                 glfwSetWindowShouldClose(window, true);
+            }
         }
     }
     void tick(GLFWwindow *window){
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        std::cout << "Client ticking!" << std::endl;
         while (!glfwWindowShouldClose(window))
         {
             // input

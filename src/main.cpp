@@ -17,7 +17,7 @@ const unsigned int SCR_HEIGHT = 600;
 int main()
 {
     /**
-     * context
+     * Creating context
      */
     GLFWwindow *window = nullptr;
     if(!(window=context::init()))
@@ -26,18 +26,24 @@ int main()
         return -1;
     }
 
+    /**
+     * Starting the server.
+     */
     server::start();
 
     /**
-     * render loop
+     * Render loop. Blocking.
      */
     client::tick(window);
 
+    /**
+     * Stopping the server after the client closing
+     */
     server::stop();
     server::join();
 
     /**
-     * close all opened buffers
+     * Closing all opened buffers and destroying context
      */
     context::terminate();
     return 0;
