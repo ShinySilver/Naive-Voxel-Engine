@@ -8,7 +8,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${dir}/../build)
 
 include_directories(includes)
 
-file(COPY resources DESTINATION ${dir}/build)
+file(COPY ressources DESTINATION ${dir}/../build)
 
 file(GLOB_RECURSE SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 add_executable(iVy ${SRC_FILES})

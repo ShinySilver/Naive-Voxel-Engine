@@ -8,6 +8,12 @@
 
 namespace context {
     GLFWwindow *init();
+
+    void setFullscreen(bool);
+
+    int getWidth();
+    int getHeight();
+
     void terminate();
 }
 
