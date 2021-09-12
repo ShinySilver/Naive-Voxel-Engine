@@ -20,8 +20,8 @@
  */
 class EntityChunk: public Entity {
 public:
-	EntityChunk(ChunkUtil::BasicChunk*);
-	EntityChunk(ChunkUtil::BasicChunk*, Location);
+	EntityChunk(ChunkUtil::BasicChunk);
+	EntityChunk(ChunkUtil::BasicChunk, Location);
 	virtual ~EntityChunk() = default;
 
 	virtual void preload() override;
@@ -32,7 +32,7 @@ private:
 			vertexBuffer = 0, colorBuffer = 0;
 	int verticeBufferSize = 0;
 
-	ChunkUtil::BasicChunk *_chunk;
+	ChunkUtil::BasicChunk _chunk;
 };
 
 #endif /* WORLD_ENTITY_ENTITYCHUNK_H_ */

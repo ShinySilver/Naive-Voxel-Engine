@@ -64,14 +64,14 @@ typedef struct Voxel {
 
 typedef struct {
 	std::vector<Voxel> data;
-	short size;
+	short size; 				//side size (the chunk is cubic)
 	inline Voxel& get(int x, int y, int z) {
 		return data[x + size * y + size * size * z];
 	}
 } BasicChunk;
 
 Mesh* naiveSurfaceNetsMesh(BasicChunk &chunk);
-Mesh* greedyMesh(BasicChunk &chunk);
+Mesh* greedyMesh(BasicChunk& chunk);
 Mesh* naiveMeshWithCulling(BasicChunk &chunk);
 
 void generateChunkMesh(BasicChunk &chunk, MesherType type);
