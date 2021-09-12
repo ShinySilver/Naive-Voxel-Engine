@@ -25,12 +25,12 @@ static int verticeBufferSize;
 
 EntityUniformVoxel::EntityUniformVoxel(const glm::vec3 &position,
 		const glm::vec4 &color) :
-		Entity { Location { position } } { // Wololo c'est moche
+		Entity(Location(position)) { // Wololo c'est (moins) moche
 	_color = color;
 }
 EntityUniformVoxel::EntityUniformVoxel(const glm::vec3 &position,
 		const glm::vec3 &color) :
-		Entity { Location { position } } { // Wololo c'est tjrs aussi moche
+		Entity(Location(position)) { // Wololo c'est tjrs aussi (moins) moche
 	_color = glm::vec4(color, 1.0);
 }
 
