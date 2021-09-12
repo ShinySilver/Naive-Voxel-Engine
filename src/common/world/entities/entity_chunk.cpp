@@ -18,15 +18,11 @@
 #include <glm/glm/vec3.hpp>
 #include <glm/glm/ext/matrix_float4x4.hpp>
 
-EntityChunk::EntityChunk(ChunkUtil::BasicChunk *chunk) :
-		Entity::Entity { } {
-	_chunk = chunk;
-}
+EntityChunk::EntityChunk(ChunkUtil::BasicChunk chunk) :
+		_chunk(std::move(chunk)) {}
 
-EntityChunk::EntityChunk(ChunkUtil::BasicChunk *chunk, Location loc) :
-		Entity::Entity { loc } {
-	_chunk = chunk;
-}
+EntityChunk::EntityChunk(ChunkUtil::BasicChunk chunk, Location loc) :
+		Entity(loc), _chunk(std::move(chunk)) {}
 
 void EntityChunk::preload() {
 	std::cout << "Preloading Chunk.\n";
@@ -48,7 +44,7 @@ void EntityChunk::preload() {
 	//std::vector<glm::vec3> colors;
 	//loadOBJ("ressources/models/example/cube.obj", vertices, uvs, normals);
 	std::cout << "Meshing...\n";
-	ChunkUtil::Mesh *mesh = ChunkUtil::greedyMesh(*_chunk);
+	ChunkUtil::Mesh *mesh = ChunkUtil::greedyMesh(_chunk);
 
 	std::cout << "Creating VAB...\n";
 	// First attribute of our VAO, vertices
