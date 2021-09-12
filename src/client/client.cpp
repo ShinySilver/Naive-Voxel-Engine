@@ -38,7 +38,9 @@ void tick(GLFWwindow *window){
 		// input
 		// -----
 		processInput(window);
-		auto mat = glm::scale(glm::mat4(1), glm::vec3(0.1));
+		auto mat = glm::scale(
+				glm::translate(glm::mat4(1), glm::vec3(0.5, 0.0, 0.0)),
+				glm::vec3(0.07));
 
 		// render
 		// ------
@@ -53,4 +55,6 @@ void tick(GLFWwindow *window){
 		glfwPollEvents();
 	}
 }
-}
+
+} //namespace client
+
