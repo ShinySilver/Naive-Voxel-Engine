@@ -30,8 +30,8 @@ public:
 	virtual void unload() = 0;
 
 	/**
-	 * Both the render thread and the update thread will iterate over entities. However, there should not be a race over
-	 * them. At last, those functions should only be called by the API.
+	 * Both the render thread and the update thread will iterate over entities. However, there
+	 * should not be a race over them. At last, those functions should only be called by the API.
 	 */
 	void lock();
 	void unlock();
@@ -43,7 +43,8 @@ public:
 	virtual void fastUpdate();
 
 	/**
-	 * Location is updated every fixed update, and extrapolated using speed during render. No teleportation from outside.
+	 * Location is updated every fixed update, and extrapolated using speed during render. No
+	 * teleportation from outside.
 	 */
 	const Location& getLocation() const;
 

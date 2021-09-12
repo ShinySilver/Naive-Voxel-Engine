@@ -7,7 +7,7 @@
 #include <GLFW/glfw3.h>
 #include <atomic>
 #include <thread>
-//#include "../common/world.h"
+#include "../common/world.h"
 
 #include "server.h"
 
@@ -26,7 +26,11 @@ namespace server{
     }
 
     void start(){
-        std::cout << "Server starting." << std::endl;
+        std::cout << "Server starting..." << std::endl;
+
+		// for now itializing world at server start
+		world::init();
+
         s = std::thread(tick);
     }
 
