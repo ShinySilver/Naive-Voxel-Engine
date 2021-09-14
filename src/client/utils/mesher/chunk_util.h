@@ -57,9 +57,9 @@ typedef struct Voxel {
 		color{0,128,0}, uniformFace { true, 0, {0,128,0} } {
 	}
 
-	inline bool isEmpty() {
-		return color.r == 0 && color.g == 0 && color.b == 0;
-	}
+    inline bool isEmpty() {
+        return color.r == 0 && color.g == 0 && color.b == 0;
+    }
 } Voxel;
 
 typedef struct {

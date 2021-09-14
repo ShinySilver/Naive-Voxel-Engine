@@ -26,10 +26,18 @@ namespace client {
                 switch (key) {
                     case GLFW_KEY_F1:
                         wire_mode = !wire_mode;
-                        glPolygonMode(GL_FRONT_AND_BACK, wire_mode?GL_LINE:GL_FILL);
+                        glPolygonMode(GL_FRONT_AND_BACK, wire_mode ? GL_LINE : GL_FILL);
+                        std::cout << (wire_mode ? "Enabling":"Disabling") << " wire mode." << std::endl;
                         break;
                     case GLFW_KEY_F2:
                         debug_mode = !debug_mode;
+                        if (debug_mode) {
+                            std::cout << "Disabling OpenGL culling." << std::endl;
+                            glDisable(GL_CULL_FACE);
+                        } else {
+                            std::cout << "Enabling OpenGL culling." << std::endl;
+                            glEnable(GL_CULL_FACE);
+                        }
                         break;
                     case GLFW_KEY_F11:
                         is_fullscreen = !is_fullscreen;
@@ -45,7 +53,7 @@ namespace client {
                     default:
                         break;
                 }
-            }else if(action == GLFW_RELEASE){
+            } else if (action == GLFW_RELEASE) {
                 switch (key) {
                     case GLFW_KEY_LEFT_ALT:
                         glfwSetCursorPos(window, context::getWidth() / 2, context::getHeight() / 2);
