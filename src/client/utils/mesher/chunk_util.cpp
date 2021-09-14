@@ -226,7 +226,8 @@ namespace ChunkUtil {
                              */
                             mask[n++] =
                                     ((voxelFace != nullptr && voxelFace1 != nullptr
-                                                              && (voxelFace->equals(*voxelFace1)||!voxelFace->transparent&&!voxelFace1->transparent))) ?
+                                      && (voxelFace->equals(*voxelFace1) ||
+                                          !voxelFace->transparent && !voxelFace1->transparent))) ?
                                     nullptr :
                                     backFace ? voxelFace1 : voxelFace;
                         }
