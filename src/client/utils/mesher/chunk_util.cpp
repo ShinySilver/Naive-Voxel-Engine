@@ -219,10 +219,11 @@ namespace ChunkUtil {
                                     nullptr;
 
                             /*
-                             * Note that we're using the equals function in the voxel face class here, which lets the faces
-                             * be compared based on any number of attributes.
+                             * Note that we're using the equals function in the voxel face class here, which lets the
+                             * faces be compared based on any number of attributes.
                              *
-                             * Also, we choose the face to add to the mask depending on whether we're moving through on a backface or not.
+                             * Also, we choose the face to add to the mask depending on whether we're moving through on
+                             * a backface or not.
                              */
                             mask[n++] =
                                     ((voxelFace != nullptr && voxelFace1 != nullptr
