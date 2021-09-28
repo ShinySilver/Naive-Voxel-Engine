@@ -3,10 +3,12 @@
 // inputs
 in vec3 frag_color;
 in vec3 frag_normal;
-in vec3 light_vector;
+in vec3 frag_light;
 
 // outputs
 out vec3 color;
+
+// uniforms
 
 void main() {
 
@@ -17,7 +19,7 @@ void main() {
 	float ambient = ambient_factor;
 
 	float diffuse_factor = 0.5;
-	float diffuse  = diffuse_factor * max(dot(frag_normal, light_vector), 0.0);
+	float diffuse = diffuse_factor * max(dot(frag_normal, frag_light), 0.0);
 
 	color = frag_color * (ambient + diffuse) * light_color;
 }

@@ -104,7 +104,7 @@ namespace client {
                 e->lock();
                 e->fastUpdate();
 				//TODO temporary light pos
-                e->draw(_matrix, glm::vec3(10.0, 0.0, 0.0));
+                e->draw(_matrix, glm::vec3(0.5, 0.5, 1.0));
                 e->unlock();
             }
             glfwSwapBuffers(window);

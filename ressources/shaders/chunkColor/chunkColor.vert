@@ -8,11 +8,11 @@ layout (location = 2) in vec3 vert_normal;
 // outputs
 out vec3 frag_color;
 out vec3 frag_normal;
-out vec3 light_vector;
+out vec3 frag_light;
 
 // uniforms
 uniform mat4 MVP;
-uniform vec3 light_pos;
+uniform vec3 light_dir;
 
 void main() {	
 
@@ -22,6 +22,7 @@ void main() {
 	// computing data for fragment shader
 	frag_color = vertexColor;
 	frag_normal = vert_normal;
-	light_vector = normalize(light_pos - vertexPosition_modelspace);
+	frag_light = light_dir;
+	
 }
 

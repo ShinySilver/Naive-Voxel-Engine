@@ -26,7 +26,7 @@ public:
 	 * Those are specific to each entity
 	 */
 	virtual void preload() = 0;
-	virtual void draw(glm::mat4&, const glm::vec3& light_pos) = 0;
+	virtual void draw(glm::mat4&, const glm::vec3& light_dir) = 0;
 	virtual void unload() = 0;
 
 	/**

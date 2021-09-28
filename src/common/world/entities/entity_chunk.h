@@ -25,7 +25,7 @@ public:
 	virtual ~EntityChunk() = default;
 
 	virtual void preload() override;
-	virtual void draw(glm::mat4&, const glm::vec3& light_pos) override;
+	virtual void draw(glm::mat4&, const glm::vec3& light_dir) override;
 	virtual void unload() override;
 private:
 	GLuint vertexArrayID = 0, 

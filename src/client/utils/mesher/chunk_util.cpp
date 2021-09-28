@@ -103,10 +103,26 @@ void quad(glm::vec3 bottomLeft, glm::vec3 topLeft, glm::vec3 topRight,
 	}
 
 	// computing triangles normals
-	glm::vec3 normal1 = glm::normalize(
-			glm::cross(vertices[2] - vertices[0], vertices[1] - vertices[0]));
-	glm::vec3 normal2 = glm::normalize(
-			glm::cross(vertices[1] - vertices[3], vertices[2] - vertices[3]));
+	glm::vec3 normal1, normal2;
+	if(backFace) {
+		normal1 = glm::normalize(glm::cross(
+					vertices[1] - vertices[0], 
+					vertices[2] - vertices[0]
+				));
+		normal2 = glm::normalize(glm::cross(
+					vertices[2] - vertices[3], 
+					vertices[1] - vertices[3]
+				));
+	} else {
+		normal1 = glm::normalize(glm::cross(
+					vertices[2] - vertices[0], 
+					vertices[1] - vertices[0]
+				));
+		normal2 = glm::normalize(glm::cross(
+					vertices[1] - vertices[3], 
+					vertices[2] - vertices[3]
+				));
+	}
 
 	// generate mesh
 	for (int i : indexes) {
