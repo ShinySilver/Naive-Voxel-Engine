@@ -9,6 +9,7 @@
 #define WORLD_DATA_CHUNKUTIL_H_
 
 #include <vector>
+
 #include <glm/glm/vec3.hpp>
 
 /*
@@ -24,6 +25,7 @@ typedef glm::vec3 Color;
 typedef struct {
 	std::vector<glm::vec3> vertices;
 	std::vector<Color> colors;
+	std::vector<glm::vec3> normals;
 } Mesh;
 
 typedef struct VoxelFace {

@@ -2,12 +2,11 @@
 
 #include "../client/utils/mesher/chunk_util.h"
 #include "world/entities/entity_chunk.h"
-#include "world/entities/entity_uniform_voxel.h"
 
 #include <cmath>
 
 #define CHUNK_SIDE 16
-#define VOXEL_STONE ChunkUtil::Color(0.8, 0.8, 0.8)
+#define VOXEL_STONE ChunkUtil::Color(0.5, 0.5, 0.5)
 #define VOXEL_GRASS ChunkUtil::Color(0.1, 0.6, 0.1)
 #define VOXEL_AIR ChunkUtil::Color(0.0, 0.0, 0.0)
 

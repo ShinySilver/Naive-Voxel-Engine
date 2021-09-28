@@ -33,11 +33,12 @@ void EntityChunk::preload() {
 
 	// Create and compile our GLSL program from the shaders
 	std::cout << "Loading Shader...\n";
-	programID = LoadShaders("ressources/shaders/chunkColor/chunkColor.vs",
-			"ressources/shaders/chunkColor/chunkColor.fs");
+	programID = LoadShaders("ressources/shaders/chunkColor/chunkColor.vert",
+			"ressources/shaders/chunkColor/chunkColor.frag");
 
 	// Get a handle for our "MVP" uniform
 	matrixID = glGetUniformLocation(programID, "MVP");
+	lightID = glGetUniformLocation(programID, "light_pos");
 
 	// Read our .obj file
 	//std::vector<glm::vec3> vertices;
@@ -59,18 +60,28 @@ void EntityChunk::preload() {
 	glGenBuffers(1, &colorBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
 	glBufferData(GL_ARRAY_BUFFER, mesh->colors.size() * sizeof(glm::vec3),
-			mesh->colors.data(),
-			GL_STATIC_DRAW);
+			mesh->colors.data(), GL_STATIC_DRAW);
+
+	// 3rd attribute, normals
+	glGenBuffers(1, &normalBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
+	glBufferData(GL_ARRAY_BUFFER, mesh->normals.size() * sizeof(glm::vec3),
+			mesh->normals.data(), GL_STATIC_DRAW);
 
 	delete mesh;
 	std::cout << "Done preloading Chunk.\n";
 }
 
-void EntityChunk::draw(glm::mat4 &base) {
-	// Use our shader
+void EntityChunk::draw(glm::mat4 &base, const glm::vec3& light_pos) {
+
+	// shader program
 	glUseProgram(programID);
 
+	// uniforms
 	ShaderBase::loadMVP(matrixID, base, _extraPosition, _extraRotation);
+	glUniformMatrix4fv(lightID, 1, GL_FALSE, glm::value_ptr(light_pos));
+
+	// vertex array
 	glBindVertexArray(vertexArrayID);
 
 	// 1rst attribute buffer : vertices
@@ -94,6 +105,16 @@ void EntityChunk::draw(glm::mat4 &base) {
 			0,	// stride
 			(void*) 0	// array buffer offset
 			);
+
+	// 3rd attribute buffer : normals
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
+	glVertexAttribPointer(2, 
+			3,
+			GL_FLOAT,
+			GL_FALSE,
+			0,
+			(void*) 0);
 
 	// Draw the triangles !
 	glDrawArrays(GL_TRIANGLES, 0, verticeBufferSize);

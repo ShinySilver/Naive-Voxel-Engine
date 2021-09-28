@@ -25,11 +25,17 @@ public:
 	virtual ~EntityChunk() = default;
 
 	virtual void preload() override;
-	virtual void draw(glm::mat4&) override;
+	virtual void draw(glm::mat4&, const glm::vec3& light_pos) override;
 	virtual void unload() override;
 private:
-	GLuint vertexArrayID = 0, colorArrayID = 0, programID = 0, matrixID = 0,
-			vertexBuffer = 0, colorBuffer = 0;
+	GLuint vertexArrayID = 0, 
+		   colorArrayID = 0, 
+		   programID = 0, 
+		   matrixID = 0,
+		   lightID = 0,
+		   vertexBuffer = 0, 
+		   colorBuffer = 0,
+		   normalBuffer = 0;
 	int verticeBufferSize = 0;
 
 	ChunkUtil::BasicChunk _chunk;

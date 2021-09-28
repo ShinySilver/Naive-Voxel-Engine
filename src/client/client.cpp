@@ -103,7 +103,8 @@ namespace client {
             for (auto const e : world::get_entities()) {
                 e->lock();
                 e->fastUpdate();
-                e->draw(_matrix);
+				//TODO temporary light pos
+                e->draw(_matrix, glm::vec3(10.0, 0.0, 0.0));
                 e->unlock();
             }
             glfwSwapBuffers(window);
