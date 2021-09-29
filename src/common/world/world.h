@@ -9,6 +9,7 @@ namespace world {
 
 void init();
 
+world_provider &get_world_provider();
 std::vector<Entity*>& get_entities();
 
 }
