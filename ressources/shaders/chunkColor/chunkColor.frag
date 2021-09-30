@@ -3,12 +3,12 @@
 // inputs
 in vec3 frag_color;
 in vec3 frag_normal;
-in vec3 frag_light;
 
 // outputs
 out vec3 color;
 
 // uniforms
+uniform vec3 light_dir;
 
 void main() {
 
@@ -19,7 +19,8 @@ void main() {
 	float ambient = ambient_factor;
 
 	float diffuse_factor = 0.5;
-	float diffuse = diffuse_factor * max(dot(frag_normal, frag_light), 0.0);
+	//TODO add matrix to transform normals into world coords
+	float diffuse = diffuse_factor * max(dot(frag_normal, light_dir), 0.0);
 
 	color = frag_color * (ambient + diffuse) * light_color;
 }

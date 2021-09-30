@@ -122,6 +122,7 @@ void EntityChunk::draw(glm::mat4 &base, const glm::vec3& light_dir) {
 	// And then we unbind everything
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
 	glBindVertexArray(0);
 }
 
@@ -130,4 +131,5 @@ void EntityChunk::unload() {
 	glDeleteProgram(programID);
 	glDeleteBuffers(1, &vertexBuffer);
 	glDeleteBuffers(1, &colorBuffer);
+	glDeleteBuffers(1, &normalBuffer);
 }
