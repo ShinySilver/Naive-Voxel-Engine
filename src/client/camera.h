@@ -15,6 +15,7 @@ namespace camera{
 	void updateControlling(GLFWwindow *);
 	void updateView(GLFWwindow *, glm::mat4&, glm::mat4&);
 	void fixedUpdate();
+	glm::vec3 get_position();
 };
 
 #endif /* WORLD_ENTITY_ENTITYCAMERA_H_ */

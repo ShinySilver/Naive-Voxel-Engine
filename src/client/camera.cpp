@@ -92,4 +92,8 @@ namespace camera{
                                  _up             // Head is up (set to 0,-1,0 to look upside-down)
         );
     }
+
+	glm::vec3 get_position() {
+		return _location.position;
+	}
 }

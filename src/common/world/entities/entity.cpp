@@ -7,6 +7,9 @@
 
 #include "entity.h"
 
+#include <glm/glm/ext/matrix_transform.hpp>
+
+// internal function
 
 Entity::Entity() :
 		_location { }, _extraPosition { _location.position }, _extraRotation {
@@ -23,6 +26,15 @@ void Entity::fastUpdate() {
 			/ FIXED_TICK_TIME;
 	_extraRotation += (_location.rotation - _extraRotation) * FIXED_RENDER_TIME
 			/ FIXED_TICK_TIME;
+
+	_normal_matrix = glm::mat3(glm::transpose(glm::inverse( 
+					glm::rotate(
+						glm::rotate( 
+							glm::rotate(
+								glm::translate(glm::mat4(1.0f), _extraPosition),
+								_extraRotation.x, glm::vec3(1.0f, 0.0f, 0.0f)),
+							_extraRotation.y, glm::vec3(0.0f, 1.0f, 0.0f)),
+						_extraRotation.z, glm::vec3(0.0f, 0.0f, 1.0f)))));
 }
 
 void Entity::fixedUpdate() {
@@ -63,4 +75,5 @@ const glm::vec3& Entity::getRotationSpeed() const {
 void Entity::setRotationSpeed(glm::vec3 &rotationSpeed) {
 	_location.rotationSpeed = rotationSpeed;
 }
+
 

@@ -37,8 +37,10 @@ void EntityChunk::preload() {
 			"ressources/shaders/chunkColor/chunkColor.frag");
 
 	// Get a handle for our "MVP" uniform
-	matrixID = glGetUniformLocation(programID, "MVP");
-	lightID = glGetUniformLocation(programID, "light_dir");
+	matrix_ID = glGetUniformLocation(programID, "MVP");
+	normal_mat_ID = glGetUniformLocation(programID, "normal_mat");
+	light_ID = glGetUniformLocation(programID, "light_position");
+	view_ID = glGetUniformLocation(programID, "view_position");
 
 	// Read our .obj file
 	//std::vector<glm::vec3> vertices;
@@ -72,14 +74,23 @@ void EntityChunk::preload() {
 	std::cout << "Done preloading Chunk.\n";
 }
 
-void EntityChunk::draw(glm::mat4 &base, const glm::vec3& light_dir) {
+void EntityChunk::draw(glm::mat4 &base, const glm::vec3& light_pos, 
+		const glm::vec3& view_pos) {
 
 	// shader program
 	glUseProgram(programID);
 
 	// uniforms
-	ShaderBase::loadMVP(matrixID, base, _extraPosition, _extraRotation);
-	glUniform3fv(lightID, 1, glm::value_ptr(light_dir));
+	auto MVP = glm::rotate( glm::rotate( glm::rotate(
+					glm::translate(base,_extraPosition), 
+					_extraRotation.x, glm::vec3(1.0f,0.0f, 0.0f)), 
+				_extraRotation.y, glm::vec3(0.0f,1.0f, 0.0f)), 
+			_extraRotation.z, glm::vec3(0.0f,0.0f, 1.0f));
+
+	glUniformMatrix4fv(matrix_ID, 1, GL_FALSE, glm::value_ptr(MVP));
+	glUniformMatrix3fv(normal_mat_ID, 1, GL_FALSE, glm::value_ptr(_normal_matrix));
+	glUniform3fv(light_ID, 1, glm::value_ptr(light_pos));
+	glUniform3fv(view_ID, 1, glm::value_ptr(view_pos));
 
 	// vertex array
 	glBindVertexArray(vertexArrayID);

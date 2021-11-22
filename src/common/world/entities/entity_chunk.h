@@ -25,14 +25,16 @@ public:
 	virtual ~EntityChunk() = default;
 
 	virtual void preload() override;
-	virtual void draw(glm::mat4&, const glm::vec3& light_dir) override;
+	virtual void draw(glm::mat4&, const glm::vec3& light_dir, const glm::vec3& view_pos) override;
 	virtual void unload() override;
 private:
 	GLuint vertexArrayID = 0, 
 		   colorArrayID = 0, 
 		   programID = 0, 
-		   matrixID = 0,
-		   lightID = 0,
+		   matrix_ID = 0,
+		   normal_mat_ID = 0,
+		   light_ID = 0,
+		   view_ID = 0,
 		   vertexBuffer = 0, 
 		   colorBuffer = 0,
 		   normalBuffer = 0;

@@ -26,7 +26,7 @@ public:
 	 * Those are specific to each entity
 	 */
 	virtual void preload() = 0;
-	virtual void draw(glm::mat4&, const glm::vec3& light_dir) = 0;
+	virtual void draw(glm::mat4&, const glm::vec3& light_dir, const glm::vec3& view_pos) = 0;
 	virtual void unload() = 0;
 
 	/**
@@ -60,6 +60,9 @@ public:
 protected:
 	Location _location;
 	glm::vec3 _extraPosition, _extraRotation;
+
+	glm::mat3 _normal_matrix;
+
 private:
 	std::mutex _mutex;
 
