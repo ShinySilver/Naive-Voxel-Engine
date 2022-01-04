@@ -13,8 +13,8 @@
 #include <glm/glm/vec3.hpp>
 #include <glm/glm/ext/matrix_transform.hpp>
 
-namespace camera{
-    namespace{
+namespace camera {
+    namespace {
         float _horizontalAngle = 3.14f;
         float _verticalAngle = 0.0f;
         float _speedModifier = 30.0f; // 3 units / second
@@ -62,7 +62,8 @@ namespace camera{
         lastTime = currentTime;
 
     }
-    void updateView(GLFWwindow *window, glm::mat4& projectionMatrix, glm::mat4& viewMatrix) {
+
+    void updateView(GLFWwindow *window, glm::mat4 &projectionMatrix, glm::mat4 &viewMatrix) {
 
         // Get mouse _location.position
         double xpos, ypos;
@@ -88,8 +89,13 @@ namespace camera{
 
         // Camera matrix
         viewMatrix = glm::lookAt(_location.position,           // Camera is here
-                                 _location.position + _direction, // and looks here : at the same _location.position, plus "direction"
-                                 _up             // Head is up (set to 0,-1,0 to look upside-down)
+                                 _location.position +
+                                 _direction, // and looks here : at the same _location.position, plus "direction"
+                                 _up         // Head is up (set to 0,-1,0 to look upside-down)
         );
+    }
+
+    Location &getLocation() {
+        return _location;
     }
 }

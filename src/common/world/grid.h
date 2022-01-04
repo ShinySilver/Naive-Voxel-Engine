@@ -5,14 +5,11 @@
 #ifndef IVY_GRID_H
 #define IVY_GRID_H
 
-
-class grid {
-public:
-    grid();
-    ~grid();
-
-
-};
+namespace grid {
+    inline glm::vec3 pos_to_chunk(Location &v){
+        return glm::vec3(1, 1, 1);
+    }
+}
 
 
 #endif //IVY_GRID_H

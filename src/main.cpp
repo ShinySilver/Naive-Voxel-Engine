@@ -32,7 +32,7 @@ int main()
     server::start();
 
     /**
-     * Render loop. Blocking.
+     * Init client then start the render loop. Blocking.
      */
     client::tick(window);
 

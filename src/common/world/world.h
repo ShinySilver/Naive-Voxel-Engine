@@ -1,16 +1,23 @@
 #ifndef IVY_WORLD_H
 #define IVY_WORLD_H
 
-#include "world/entities/entity.h"
+#include "entities/entity.h"
+#include <bits/stdc++.h>
 
 #include <vector>
 
 namespace world {
 
-void init();
+    void init();
 
-world_provider &get_world_provider();
-std::vector<Entity*>& get_entities();
+    void get_loaded_chunks();
+    void tick();
+
+    std::vector<Entity *> get_cell(glm::vec3 &cell_coordinate);
+
+    void get_cell_async(glm::vec3 &cell_coordinate, std::function<void(const std::vector<Entity *> &cell)> callback);
+
+    std::vector<Entity *> &get_entities();
 
 }
 

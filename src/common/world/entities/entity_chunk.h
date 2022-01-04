@@ -9,7 +9,9 @@
 #define WORLD_ENTITY_ENTITYCHUNK_H_
 
 #ifndef __gl_h_
+
 #include <glad/glad.h>
+
 #endif
 
 #include "entity.h"
@@ -18,21 +20,30 @@
 /*
  *
  */
-class EntityChunk: public Entity {
+class EntityChunk : public Entity {
 public:
-	EntityChunk(ChunkUtil::BasicChunk);
-	EntityChunk(ChunkUtil::BasicChunk, Location);
-	virtual ~EntityChunk() = default;
+    EntityChunk(Chunk);
 
-	virtual void preload() override;
-	virtual void draw(glm::mat4&) override;
-	virtual void unload() override;
+    EntityChunk(Chunk, Location);
+
+    virtual ~EntityChunk() = default;
+
+    virtual void preload() override;
+
+    virtual void load() override;
+
+    virtual void draw(glm::mat4 &) override;
+
+    virtual void unload() override;
+
 private:
-	GLuint vertexArrayID = 0, colorArrayID = 0, programID = 0, matrixID = 0,
-			vertexBuffer = 0, colorBuffer = 0;
-	int verticeBufferSize = 0;
+    static GLuint programID, matrixID;
+    GLuint vertexArrayID = 0, colorArrayID = 0,
+            vertexBuffer = 0, colorBuffer = 0;
+    int verticeBufferSize = 0;
 
-	ChunkUtil::BasicChunk _chunk;
+    Chunk _chunk;
+    ChunkUtil::Mesh *_mesh;
 };
 
 #endif /* WORLD_ENTITY_ENTITYCHUNK_H_ */

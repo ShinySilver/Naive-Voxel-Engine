@@ -39,8 +39,8 @@ namespace ChunkUtil {
  * check if the voxel face should be culled, and set per-face and per-vertex
  * values as well as voxel values in the returned instance.
  */
-        ChunkUtil::VoxelFace *getVoxelFace(int x, int y, int z, int side,
-                                           BasicChunk &chunk) {
+        VoxelFace *getVoxelFace(int x, int y, int z, int side,
+                                           Chunk &chunk) {
 
             VoxelFace *voxelFace = &chunk.get(x, y, z).uniformFace;
             voxelFace->side = side;
@@ -69,7 +69,7 @@ namespace ChunkUtil {
         void quad(glm::vec3 bottomLeft, glm::vec3 topLeft, glm::vec3 topRight,
                   glm::vec3 bottomRight, int width, int height, VoxelFace *voxelFace,
                   Mesh *mesh, bool backFace) {
-            std::cout << "QUAD!\n";
+            //std::cout << "QUAD!\n";
 
             glm::vec3 vertices[4];
 
@@ -121,7 +121,7 @@ namespace ChunkUtil {
 
     } // End of private namespace
 
-    ChunkUtil::Mesh *greedyMesh(BasicChunk &chunk) {
+    ChunkUtil::Mesh *greedyMesh(Chunk &chunk) {
 
         Mesh *mesh = new Mesh();
 
@@ -347,15 +347,15 @@ namespace ChunkUtil {
         return mesh;
     }
 
-    ChunkUtil::Mesh *naiveSurfaceNetsMesh(BasicChunk &chunk) {
+    ChunkUtil::Mesh *naiveSurfaceNetsMesh(Chunk &chunk) {
         return nullptr;
     }
 
-    ChunkUtil::Mesh *naiveMeshWithCulling(BasicChunk &chunk) {
+    ChunkUtil::Mesh *naiveMeshWithCulling(Chunk &chunk) {
         return nullptr;
     }
 
-    void generateChunkMesh(BasicChunk &chunk, MesherType type) {
+    void generateChunkMesh(Chunk &chunk, MesherType type) {
         switch (type) {
             default:
             case GREEDY:

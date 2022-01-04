@@ -6,6 +6,8 @@
 #define IVY_CLIENT_H
 
 
+#include "../common/world/entities/entity.h"
+
 namespace client {
     void tick(GLFWwindow *window);
 }

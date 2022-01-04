@@ -13,7 +13,7 @@
 #include <iostream>
 #include <vector>
 
-void EntityVoxel::preload() {
+void EntityVoxel::load() {
 	std::cout << "Preloading voxel.\n";
 	glGenVertexArrays(1, &vertexArrayID);
 	glBindVertexArray(vertexArrayID);

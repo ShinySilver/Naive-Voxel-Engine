@@ -25,9 +25,10 @@ public:
 	/**
 	 * Those are specific to each entity
 	 */
-	virtual void preload() = 0;
+	virtual void preload() = 0; // Loading phase by the client worker. No GL rights.
+	virtual void load() = 0; // Loading phase by the main thread, just before the 1st render
 	virtual void draw(glm::mat4&) = 0;
-	virtual void unload() = 0;
+	virtual void unload() = 0; // Unloading by the main thread
 
 	/**
 	 * Both the render thread and the update thread will iterate over entities. However, there
