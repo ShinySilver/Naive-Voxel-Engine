@@ -5,9 +5,13 @@
 #ifndef IVY_GRID_H
 #define IVY_GRID_H
 
+#include "chunk.h"
+#include "../../client/utils/mesher/chunk_util.h"
+
 namespace grid {
-    inline glm::vec3 pos_to_chunk(Location &v){
-        return glm::vec3(1, 1, 1);
+    inline glm::vec3 pos_to_chunk(const Location &v){
+        return glm::vec3(int(v.position.x/DEFAULT_CHUNK_SIDE/VOXEL_SIZE), 0,
+                         int(v.position.z/DEFAULT_CHUNK_SIDE/VOXEL_SIZE));
     }
 }
 

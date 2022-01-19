@@ -17,24 +17,14 @@ const unsigned int SCR_HEIGHT = 600;
 int main()
 {
     /**
-     * Creating context
-     */
-    GLFWwindow *window = nullptr;
-    if(!(window=context::init()))
-    {
-        std::cout << "Could not init context!" << std::endl;
-        return -1;
-    }
-
-    /**
      * Starting the server.
      */
     server::start();
 
     /**
-     * Init client then start the render loop. Blocking.
+     * Start the client. Blocking.
      */
-    client::tick(window);
+    client::tick();
 
     /**
      * Stopping the server after the client closing
@@ -42,9 +32,5 @@ int main()
     server::stop();
     server::join();
 
-    /**
-     * Closing all opened buffers and destroying context
-     */
-    context::terminate();
     return 0;
 }

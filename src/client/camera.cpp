@@ -12,6 +12,7 @@
 #include <cmath>
 #include <glm/glm/vec3.hpp>
 #include <glm/glm/ext/matrix_transform.hpp>
+#include <mutex>
 
 namespace camera {
     namespace {
@@ -20,6 +21,7 @@ namespace camera {
         float _speedModifier = 30.0f; // 3 units / second
         float _mouseSpeedModifier = 0.005f;
         Location _location;
+        std::mutex _location_mutex;
         glm::vec3 _direction, _up, _right;
     }
 
@@ -30,6 +32,9 @@ namespace camera {
         // Compute time difference between current and last frame
         double currentTime = glfwGetTime();
         float deltaTime = float(currentTime - lastTime);
+
+        // Lock location mutex
+        _location_mutex.lock();
 
         // Move forward
         if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window,
@@ -58,6 +63,9 @@ namespace camera {
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
             _location.position[1] -= 1.0f * deltaTime * _speedModifier;
         }
+
+        // Lock location mutex
+        _location_mutex.unlock();
 
         lastTime = currentTime;
 
@@ -95,7 +103,10 @@ namespace camera {
         );
     }
 
-    Location &getLocation() {
-        return _location;
+    Location get_location() {
+        _location_mutex.lock();
+        Location l = _location;
+        _location_mutex.unlock();
+        return std::move(l);
     }
 }

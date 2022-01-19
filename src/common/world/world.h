@@ -13,7 +13,7 @@ namespace world {
     void get_loaded_chunks();
     void tick();
 
-    std::vector<Entity *> get_cell(glm::vec3 &cell_coordinate);
+    std::vector<Entity *> get_cell(const glm::vec3 &cell_coordinate);
 
     void get_cell_async(glm::vec3 &cell_coordinate, std::function<void(const std::vector<Entity *> &cell)> callback);
 

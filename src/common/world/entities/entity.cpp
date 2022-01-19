@@ -64,3 +64,7 @@ void Entity::setRotationSpeed(glm::vec3 &rotationSpeed) {
 	_location.rotationSpeed = rotationSpeed;
 }
 
+bool Entity::is_loaded() {
+    return _is_loaded;
+}
+

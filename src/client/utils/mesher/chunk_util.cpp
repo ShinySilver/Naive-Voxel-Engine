@@ -13,12 +13,7 @@
 #include <iostream>
 #include <vector>
 
-#define CHUNK_WIDTH  (16)
-#define CHUNK_HEIGHT (16)
-
 #define CENTER_CHUNKS
-
-#define VOXEL_SIZE (2.0f)
 
 #define SOUTH  (0)
 #define NORTH  (1)

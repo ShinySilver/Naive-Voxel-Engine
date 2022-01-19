@@ -76,6 +76,7 @@ void EntityUniformVoxel::load() {
 		colorID = glGetUniformLocation(programID, "fragmentColor");
 	}
 
+    _is_loaded = true;
 	std::cout << "Done preloading Construct.\n";
 }
 

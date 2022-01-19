@@ -17,7 +17,7 @@ namespace camera {
 
     void updateView(GLFWwindow *, glm::mat4 &, glm::mat4 &);
 
-    Location &getLocation();
+    Location get_location();
 
     void fixedUpdate();
 };

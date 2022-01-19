@@ -58,7 +58,12 @@ public:
 	const glm::vec3& getRotationSpeed() const;
 	void setRotationSpeed(glm::vec3 &rotationSpeed);
 
+	// TODO: Add container/chunk system + local pos/global pos
+
+    bool is_loaded();
+
 protected:
+    bool _is_loaded;
 	Location _location;
 	glm::vec3 _extraPosition, _extraRotation;
 private:

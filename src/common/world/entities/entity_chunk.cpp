@@ -12,6 +12,7 @@
 #include "../../../client/utils/loaders/shader_loader.h"
 #include "../../utils/location.h"
 #include "../../../client/utils/mesher/chunk_util.h"
+#include "../grid.h"
 
 #include <iostream>
 #include <vector>
@@ -28,27 +29,28 @@ EntityChunk::EntityChunk(Chunk chunk, Location loc) :
         Entity(loc), _chunk(std::move(chunk)) {}
 
 void EntityChunk::preload() {
-    std::cout << "Preloading Chunk.\n";
+    //std::cout << "Preloading Chunk.\n";
 
     // Read our .obj file
     //std::vector<glm::vec3> vertices;
     //std::vector<glm::vec3> colors;
     //loadOBJ("ressources/models/example/cube.obj", vertices, uvs, normals);
     Location loc = getLocation();
-    std::cout << "Meshing chunk at" << loc.position[0] << "; "
-              << loc.position[1] << "; "
-              << loc.position[2] << "...\n";
+    glm::vec3 chunk_pos = grid::pos_to_chunk(loc);
+    //std::cout << "Meshing chunk at " << int(chunk_pos.x) << "; "
+    //          << int(chunk_pos.y) << "; "
+    //          << int(chunk_pos.z) << "...\n";
     _mesh = ChunkUtil::greedyMesh(_chunk);
 }
 
 void EntityChunk::load() {
-    std::cout << "Loading Chunk.\n";
+    //std::cout << "Loading Chunk.\n";
 
     // Our VAO
     glGenVertexArrays(1, &vertexArrayID);
     glBindVertexArray(vertexArrayID);
 
-    if (!programID){
+    if (!programID) {
         // The 1st time, create and compile our GLSL program from the shaders
         std::cout << "Loading Shader...\n";
         programID = LoadShaders("ressources/shaders/chunkColor/chunkColor.vs",
@@ -58,14 +60,14 @@ void EntityChunk::load() {
         matrixID = glGetUniformLocation(programID, "MVP");
     }
 
-    std::cout << "Creating VAB...\n";
+    //std::cout << "Creating VAB...\n";
     // First attribute of our VAO, vertices
     glGenBuffers(1, &vertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
     glBufferData(GL_ARRAY_BUFFER, _mesh->vertices.size() * sizeof(glm::vec3),
                  _mesh->vertices.data(), GL_STATIC_DRAW);
     verticeBufferSize = (int) _mesh->vertices.size();
-    std::cout << "Vertice Buffer Size: " << verticeBufferSize << "\n";
+    //std::cout << "Vertice Buffer Size: " << verticeBufferSize << "\n";
 
     // 2nd attribute, colors
     glGenBuffers(1, &colorBuffer);
@@ -75,7 +77,8 @@ void EntityChunk::load() {
                  GL_STATIC_DRAW);
 
     delete _mesh;
-    std::cout << "Done preloading Chunk.\n";
+    _is_loaded = true;
+    //std::cout << "Done preloading Chunk.\n";
 }
 
 void EntityChunk::draw(glm::mat4 &base) {

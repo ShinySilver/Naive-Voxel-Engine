@@ -50,6 +50,7 @@ void EntityVoxel::load() {
 	glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0],
 	GL_STATIC_DRAW);
 
+    _is_loaded = true;
 	std::cout << "Done preloading voxel.\n";
 }
 

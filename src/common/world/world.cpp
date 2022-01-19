@@ -14,12 +14,14 @@
 #define TICK_RANGE 64
 #define VIEW_RANGE 128
 
+#include "../../client/utils/mesher/chunk_util.h"
+
 namespace world {
     namespace {
         static std::vector<Entity *> entities;
 
         std::vector<Entity *> generate_island(uint32_t sea_level, uint32_t height,
-                                              uint32_t depth) {
+                                              uint32_t depth, glm::vec3 position) {
 
             //generating upper enveloppe
             std::vector<char> upper_env;
@@ -70,7 +72,7 @@ namespace world {
                 }
             }
 
-            auto chunk_entity = new EntityChunk(Chunk(std::move(voxels), CHUNK_SIDE));
+            auto chunk_entity = new EntityChunk(Chunk(std::move(voxels), CHUNK_SIDE), Location(position));
             chunk_entity->preload();
 
             return std::move(std::vector<Entity *>{chunk_entity});
@@ -78,26 +80,27 @@ namespace world {
     }
 
 
-    void init() {
-
-        auto island = generate_island(7, 8, 6);
-        entities.reserve(entities.size() + island.size());
-
-        for (auto entity : island) {
-            entities.emplace_back(entity);
-        }
+    void init() { // TODO: eventually remove?
+//        auto island = generate_island(7, 8, 6);
+//        entities.reserve(entities.size() + island.size());
+//
+//        for (auto entity : island) {
+//            entities.emplace_back(entity);
+//        }
     }
 
-    std::vector<Entity *> &get_entities() {
+    std::vector<Entity *> &get_entities() {// TODO: remove this func
         return entities;
     }
 
-    std::vector<Entity *> get_cell(glm::vec3 &cell_coordinate) {
-        return generate_island(7, 8, 6);
+    std::vector<Entity *> get_cell(const glm::vec3 &cell_coordinate) {
+        return generate_island(7, 8, 6, cell_coordinate
+        * float(DEFAULT_CHUNK_SIDE * VOXEL_SIZE));
     }
 
     void get_cell_async(glm::vec3 &cell_coordinate, std::function<void(const std::vector<Entity *> &cell)> callback) {
-        callback(generate_island(7, 8, 6));
+        callback(generate_island(7, 8, 6, cell_coordinate
+        * float(DEFAULT_CHUNK_SIDE * VOXEL_SIZE)));
     }
 
 } //namespace world
