@@ -7,7 +7,7 @@ in vec3 frag_position;
 in vec3 light_dir;
 
 // outputs
-out vec3 color;
+out vec4 color;
 
 // uniforms
 uniform vec3 view_position;
@@ -29,5 +29,5 @@ void main() {
 	float specular = specular_factor * pow(max(dot(view_dir, reflect_dir), 0.0),
 			32);
 
-	color = frag_color * (ambient + diffuse + specular) * light_color;
+	color = vec4(frag_color * (ambient + diffuse + specular) * light_color, 1.0);
 }
