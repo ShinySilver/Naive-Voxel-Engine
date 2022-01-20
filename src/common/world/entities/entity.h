@@ -25,9 +25,10 @@ public:
 	/**
 	 * Those are specific to each entity
 	 */
-	virtual void preload() = 0;
+	virtual void preload() = 0; // Loading phase by the client worker. No GL rights.
+	virtual void load() = 0; // Loading phase by the main thread, just before the 1st render
 	virtual void draw(glm::mat4&, const glm::vec3& light_dir, const glm::vec3& view_pos) = 0;
-	virtual void unload() = 0;
+	virtual void unload() = 0; // Unloading by the main thread
 
 	/**
 	 * Both the render thread and the update thread will iterate over entities. However, there
@@ -57,7 +58,12 @@ public:
 	const glm::vec3& getRotationSpeed() const;
 	void setRotationSpeed(glm::vec3 &rotationSpeed);
 
+	// TODO: Add container/chunk system + local pos/global pos
+
+    bool is_loaded();
+
 protected:
+    bool _is_loaded;
 	Location _location;
 	glm::vec3 _extraPosition, _extraRotation;
 

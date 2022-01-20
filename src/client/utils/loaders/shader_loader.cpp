@@ -5,6 +5,7 @@
 #include <fstream>
 #include <cstdio>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -26,10 +27,9 @@ GLuint LoadShaders(const char * vertex_file_path,
 			VertexShaderCode += "\n" + Line;
 		VertexShaderStream.close();
 	} else {
-		std::cout << "Impossible to open " << vertex_file_path
-				<< ". Are you in the right directory ?\n" << std::endl;
-		getchar();
-		return 0;
+		std::stringstream err;
+		err << vertex_file_path << ": file not found\n";
+		throw std::runtime_error(err.str());
 	}
 
 	// Read the Fragment Shader code from the file
@@ -40,6 +40,10 @@ GLuint LoadShaders(const char * vertex_file_path,
 		while (getline(FragmentShaderStream, Line))
 			FragmentShaderCode += "\n" + Line;
 		FragmentShaderStream.close();
+	} else {
+		std::stringstream err;
+		err << vertex_file_path << ": file not found\n";
+		throw std::runtime_error(err.str());
 	}
 
 	GLint Result = GL_FALSE;

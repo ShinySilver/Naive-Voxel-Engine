@@ -20,8 +20,8 @@
 #include <glm/glm/gtc/type_ptr.hpp>
 
 static GLuint vertexArrayID, programID, vertexBuffer, uvBuffer, matrixID,
-		colorID;
-static int verticeBufferSize;
+        colorID;
+static int vertexBufferSize;
 
 EntityUniformVoxel::EntityUniformVoxel(const glm::vec3 &position,
 		const glm::vec4 &color) :
@@ -35,7 +35,11 @@ EntityUniformVoxel::EntityUniformVoxel(const glm::vec3 &position,
 }
 
 void EntityUniformVoxel::preload() {
-	std::cout << "Preloading Construct.\n";
+    std::cout << "Preloading Construct.\n";
+}
+
+void EntityUniformVoxel::load() {
+	std::cout << "Loading Construct.\n";
 	glGenVertexArrays(1, &vertexArrayID);
 	glBindVertexArray(vertexArrayID);
 
@@ -61,7 +65,7 @@ void EntityUniformVoxel::preload() {
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3),
 				&vertices[0], GL_STATIC_DRAW);
-		verticeBufferSize = (int) vertices.size();
+        vertexBufferSize = (int) vertices.size();
 
 		glGenBuffers(1, &uvBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
@@ -72,6 +76,7 @@ void EntityUniformVoxel::preload() {
 		colorID = glGetUniformLocation(programID, "fragmentColor");
 	}
 
+    _is_loaded = true;
 	std::cout << "Done preloading Construct.\n";
 }
 
@@ -108,7 +113,7 @@ void EntityUniformVoxel::draw(glm::mat4 &base) {
 	glUniform4fv(colorID, 1, glm::value_ptr(_color));
 
 	// Draw the triangle !
-	glDrawArrays(GL_TRIANGLES, 0, verticeBufferSize);
+	glDrawArrays(GL_TRIANGLES, 0, vertexBufferSize);
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);

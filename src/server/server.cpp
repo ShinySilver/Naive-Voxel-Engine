@@ -7,9 +7,9 @@
 #include <GLFW/glfw3.h>
 #include <atomic>
 #include <thread>
-#include "../common/world.h"
 
 #include "server.h"
+#include "../common/world/world.h"
 
 namespace server{
     namespace{
@@ -19,7 +19,8 @@ namespace server{
         void tick(){
             while (!shutting_down)
             {
-
+                // World.tick?
+                //
             }
             std::cout << "Server shutting down." << std::endl;
         }
