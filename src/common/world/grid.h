@@ -10,8 +10,9 @@
 
 namespace grid {
     inline glm::vec3 pos_to_chunk(const Location &v){
-        return glm::vec3(int(v.position.x/DEFAULT_CHUNK_SIDE/VOXEL_SIZE), 0,
-                         int(v.position.z/DEFAULT_CHUNK_SIDE/VOXEL_SIZE));
+        return glm::vec3(int(v.position.x/DEFAULT_CHUNK_SIDE/VOXEL_SIZE),
+                         int(v.position.y/DEFAULT_CHUNK_SIDE/VOXEL_SIZE),
+						 0);
     }
 }
 

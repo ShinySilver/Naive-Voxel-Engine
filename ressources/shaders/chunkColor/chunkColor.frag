@@ -26,8 +26,8 @@ void main() {
 	float specular_factor = 0.4;
 	vec3 view_dir = normalize(view_position - frag_position);
 	vec3 reflect_dir = reflect(-light_dir, frag_normal);
-	float specular = specular_factor * pow(max(dot(view_dir, reflect_dir), 0.0),
-			32);
+	float specular = specular_factor * pow(max(dot(view_dir, reflect_dir), 0.0), 32);
 
 	color = vec4(frag_color * (ambient + diffuse + specular) * light_color, 1.0);
 }
+

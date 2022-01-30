@@ -25,6 +25,6 @@ void main() {
 	frag_color = vert_color;
 	frag_normal = normal_mat * vert_normal;
 	frag_position = vert_position;
-	light_dir = normalize(vert_position - light_position);
+	light_dir = normalize(light_position - vert_position);
 }
 

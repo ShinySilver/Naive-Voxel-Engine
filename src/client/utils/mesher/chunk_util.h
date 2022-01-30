@@ -21,6 +21,7 @@
  *
  */
 namespace ChunkUtil {
+
 enum MesherType {
 	GREEDY, NAIVE_SURFACE_NET, NAIVE_WITH_CULLING
 };
@@ -36,6 +37,7 @@ Mesh* greedyMesh(Chunk& chunk);
 Mesh* naiveMeshWithCulling(Chunk &chunk);
 
 void generateChunkMesh(Chunk &chunk, MesherType type);
-}
+
+} //namespace ChunkUtil
 
 #endif /* WORLD_DATA_CHUNKUTIL_H_ */

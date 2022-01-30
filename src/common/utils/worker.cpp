@@ -26,7 +26,8 @@ void Worker::join() {
 }
 
 void Worker::tick() {
-    std::cout << "Created worker with label \"" + label + "\" and id " + std::to_string(worker_id) + "\n";
+    std::cout << "Created worker with label \"" << label << "\" and id " 
+			  << std::to_string(worker_id) << "\n";
     while(!should_stop.load()){
         target_tick();
     }
