@@ -30,10 +30,9 @@ namespace world {
 
             for (int i = 0; i < CHUNK_SIDE; ++i) {
                 for (int j = 0; j < CHUNK_SIDE; ++j) {
-                    upper_env.emplace_back(sea_level - 1
-                                           + height
-                                             * 2 / (1 + std::exp(0.5 * std::abs(i - CHUNK_SIDE / 2)))
-                                             * 2 / (1 + std::exp(0.5 * std::abs(j - CHUNK_SIDE / 2))));
+                    upper_env.emplace_back(sea_level - 1 + height
+							* 2 / (1 + std::exp(0.5 * std::abs(i - CHUNK_SIDE / 2)))
+                            * 2 / (1 + std::exp(0.5 * std::abs(j - CHUNK_SIDE / 2))));
                 }
             }
 
@@ -44,10 +43,9 @@ namespace world {
 
             for (int i = 0; i < CHUNK_SIDE; ++i) {
                 for (int j = 0; j < CHUNK_SIDE; ++j) {
-                    lower_env.emplace_back(sea_level
-                                           - depth
-                                             * 2 / (1 + std::exp(0.4 * std::abs(i - CHUNK_SIDE / 2)))
-                                             * 2 / (1 + std::exp(0.4 * std::abs(j - CHUNK_SIDE / 2))));
+                    lower_env.emplace_back(sea_level - depth
+							* 2 / (1 + std::exp(0.4 * std::abs(i - CHUNK_SIDE / 2)))
+                            * 2 / (1 + std::exp(0.4 * std::abs(j - CHUNK_SIDE / 2))));
                 }
             }
 
@@ -72,8 +70,8 @@ namespace world {
                 }
             }
 
-            auto chunk_entity = new EntityChunk(Chunk(std::move(voxels), CHUNK_SIDE), Location(position));
-            chunk_entity->preload();
+			auto chunk_entity = new EntityChunk(Chunk(std::move(voxels), CHUNK_SIDE),
+					Location(position)); chunk_entity->preload();
 
             return std::move(std::vector<Entity *>{chunk_entity});
         }
@@ -98,7 +96,8 @@ namespace world {
         * float(DEFAULT_CHUNK_SIDE * VOXEL_SIZE));
     }
 
-    void get_cell_async(glm::vec3 &cell_coordinate, std::function<void(const std::vector<Entity *> &cell)> callback) {
+    void get_cell_async(glm::vec3 &cell_coordinate, 
+			std::function<void(const std::vector<Entity *> &cell)> callback) {
         callback(generate_island(7, 8, 6, cell_coordinate
         * float(DEFAULT_CHUNK_SIDE * VOXEL_SIZE)));
     }

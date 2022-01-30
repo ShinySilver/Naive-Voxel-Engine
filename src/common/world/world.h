@@ -15,7 +15,8 @@ namespace world {
 
     std::vector<Entity *> get_cell(const glm::vec3 &cell_coordinate);
 
-    void get_cell_async(glm::vec3 &cell_coordinate, std::function<void(const std::vector<Entity *> &cell)> callback);
+    void get_cell_async(glm::vec3 &cell_coordinate, 
+			std::function<void(const std::vector<Entity *> &cell)> callback);
 
     std::vector<Entity *> &get_entities();
 

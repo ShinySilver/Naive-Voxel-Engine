@@ -30,7 +30,8 @@ namespace client {
                     case GLFW_KEY_F1:
                         wire_mode = !wire_mode;
                         glPolygonMode(GL_FRONT_AND_BACK, wire_mode ? GL_LINE : GL_FILL);
-                        std::cout << (wire_mode ? "Enabling" : "Disabling") << " wire mode." << std::endl;
+                        std::cout << (wire_mode ? "Enabling" : "Disabling") << " wire mode." 
+								  << std::endl;
                         break;
                     case GLFW_KEY_F2:
                         debug_mode = !debug_mode;
@@ -92,29 +93,33 @@ namespace client {
             glm::vec3 player_pos = grid::pos_to_chunk(camera::get_location());
             Entity *e;
             for (int dx = -VIEW_DISTANCE; dx <= VIEW_DISTANCE; dx++) {
-                for (int dz = -VIEW_DISTANCE; dz <= VIEW_DISTANCE; dz++) {
+                for (int dy = -VIEW_DISTANCE; dy <= VIEW_DISTANCE; dy++) {
 
-                    // Naive "Round" view distance imp. For fun only. We only load in a circle around the camera
-                    if(std::pow(dx,2) + std::pow(dz,2) >= std::pow(VIEW_DISTANCE,2))
+					// Naive "Round" view distance imp. For fun only. We only load in a circle
+					// around the camera
+                    if(std::pow(dx,2) + std::pow(dy,2) >= std::pow(VIEW_DISTANCE,2))
                         continue;
 
                     // We get the chunk in the cache corresponding to the given chunk pos
                     e = chunk_map[((INT_MAX/2+(int)player_pos.x + dx)) % (VIEW_DISTANCE * 2+1)]
-                    [((INT_MAX/2+(int)player_pos.z + dz)) % (VIEW_DISTANCE * 2+1)];
+								 [((INT_MAX/2+(int)player_pos.y + dy)) % (VIEW_DISTANCE * 2+1)];
 
                     // If there is no chunk in the cache at this place (first few runs only)
                     if (!e) {
 
                         // Asking the server for the missing chunk, then adding it to preload queue
-                        Entity *new_chunk = world::get_cell(player_pos + glm::vec3(dx, 0, dz))[0];
+                        Entity *new_chunk = world::get_cell(player_pos + glm::vec3(dx, dy, 0))[0];
                         chunk_map[((INT_MAX/2+(int)player_pos.x + dx)) % (VIEW_DISTANCE * 2+1)]
-                        [((INT_MAX/2+(int)player_pos.z + dz)) % (VIEW_DISTANCE * 2+1)] = new_chunk;
+								 [((INT_MAX/2+(int)player_pos.y + dy)) % (VIEW_DISTANCE * 2+1)] 
+								 = new_chunk;
                         preloading_queue.enqueue(new_chunk);
 
                         // FIXME: get to async gen
                         // TODO: add a state array
-                    } else if (grid::pos_to_chunk(e->getLocation()) != player_pos + glm::vec3(dx, 0, dz)) {
-                        // If the mismatched chunk is not loaded yet, ignore it. We can't unload a loading chunk
+                    } else if (grid::pos_to_chunk(e->getLocation()) 
+							!= player_pos + glm::vec3(dx, dy, 0)) {
+						// If the mismatched chunk is not loaded yet, ignore it. We can't unload a
+						// loading chunk
                         if (!e->is_loaded()) {
                             continue;
                         }
@@ -123,10 +128,12 @@ namespace client {
                         // Else, put it in the unload queue
                         unloading_queue.enqueue(e);
 
-                        // In any case, if there is a chunk mismatch, ask the server for the missing chunk
-                        Entity *new_chunk = world::get_cell(player_pos + glm::vec3(dx, 0, dz))[0];
+						// In any case, if there is a chunk mismatch, ask the server for the missing
+						// chunk
+                        Entity *new_chunk = world::get_cell(player_pos + glm::vec3(dx, dy, 0))[0];
                         chunk_map[((INT_MAX/2+(int)player_pos.x + dx)) % (VIEW_DISTANCE * 2+1)]
-                        [((INT_MAX/2+(int)player_pos.z + dz)) % (VIEW_DISTANCE * 2+1)] = new_chunk;
+								 [((INT_MAX/2+(int)player_pos.y + dy)) % (VIEW_DISTANCE * 2+1)] 
+								 = new_chunk;
                         preloading_queue.enqueue(new_chunk);
                     }
                 }
@@ -137,8 +144,8 @@ namespace client {
             // Add chunks to the unloading queue
             // sleep 50 ms - 20 TPS
 
-            // MEH -> we have to get the position, but it would be easier to keep it in the main thread
-            //static bool first_tick = true;
+			// MEH -> we have to get the position, but it would be easier to keep it in the main
+			// thread static bool first_tick = true;
             //if (first_tick) {
             //    std::cout << "Main worker thread added entities into the world!\n";
             //    first_tick = false;
@@ -155,9 +162,13 @@ namespace client {
             Entity *e = preloading_queue.dequeue();
             if (e) {
                 glm::vec3 chunk_pos = grid::pos_to_chunk(e->getLocation());
-                std::cout << "Preloading chunk at chunk pos "<<chunk_pos.x<<";"<<chunk_pos.y<<";"<<chunk_pos.z
-                <<" and pos "<< e->getLocation().position.x << ";" << e->getLocation().position.y
-                << ";" << e->getLocation().position.z << "\n";
+                std::cout << "Preloading chunk at chunk pos "
+						  << chunk_pos.x << ";" 
+						  << chunk_pos.y << ";"
+						  << chunk_pos.z << " and pos "
+						  << e->getLocation().position.x << ";" 
+						  << e->getLocation().position.y << ";" 
+						  << e->getLocation().position.z << "\n";
                 e->preload();
                 loading_queue.enqueue(e);
             }
@@ -210,9 +221,13 @@ namespace client {
                     if (it != loaded_entities.end()) { loaded_entities.erase(it); }
 
                     glm::vec3 chunk_pos = grid::pos_to_chunk(tmp->getLocation());
-                    std::cout << "Unloading chunk at chunk pos "<<chunk_pos.x<<";"<<chunk_pos.y<<";"<<chunk_pos.z
-                              <<" and pos "<< tmp->getLocation().position.x << ";" << tmp->getLocation().position.y
-                              << ";" << tmp->getLocation().position.z << "\n";
+                    std::cout << "Unloading chunk at chunk pos "
+							  << chunk_pos.x << ";"
+							  << chunk_pos.y <<";"
+							  << chunk_pos.z <<" and pos "
+							  << tmp->getLocation().position.x << ";" 
+							  << tmp->getLocation().position.y << ";" 
+							  << tmp->getLocation().position.z << "\n";
 
                     delete tmp; // TODO: think about chunk serialization.
                 }
@@ -222,9 +237,13 @@ namespace client {
                     loaded_entities.emplace_back(tmp);
 
                     glm::vec3 chunk_pos = grid::pos_to_chunk(tmp->getLocation());
-                    std::cout << "Loading chunk at chunk pos "<<chunk_pos.x<<";"<<chunk_pos.y<<";"<<chunk_pos.z
-                              <<" and pos "<< tmp->getLocation().position.x << ";" << tmp->getLocation().position.y
-                              << ";" << tmp->getLocation().position.z << "\n";
+                    std::cout << "Loading chunk at chunk pos "
+							  << chunk_pos.x << ";"
+							  << chunk_pos.y << ";"
+							  << chunk_pos.z << " and pos "
+							  << tmp->getLocation().position.x << ";" 
+							  << tmp->getLocation().position.y << ";" 
+							  << tmp->getLocation().position.z << "\n";
                 }
             }
 

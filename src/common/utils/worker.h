@@ -13,8 +13,9 @@
 class Worker {
 public:
     /**
-     * every sec if main worker, check camera, then check if there is any unloaded chunks to add to the queue
-     * otherwise, load entities from the queue, and add them to the client "activate" queue
+	 * every sec if main worker, check camera, then check if there is any unloaded chunks to add to
+	 * the queue otherwise, load entities from the queue, and add them to the client "activate"
+	 * queue
      */
     Worker(std::string label, std::function<void()> target);
 
@@ -32,5 +33,5 @@ private:
     std::thread worker_thread;
 };
 
-
 #endif //IVY_WORKER_H
+

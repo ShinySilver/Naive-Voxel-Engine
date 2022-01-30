@@ -57,7 +57,7 @@ void EntityChunk::load() {
         // The 1st time, create and compile our GLSL program from the shaders
         std::cout << "Loading Shader...\n";
         program_ID = LoadShaders("ressources/shaders/chunkColor/chunkColor.vert",
-                                "ressources/shaders/chunkColor/chunkColor.frag");
+                                 "ressources/shaders/chunkColor/chunkColor.frag");
 
         // Get a handle for our "MVP" uniform
         matrix_ID = glGetUniformLocation(program_ID, "MVP");
@@ -92,8 +92,7 @@ void EntityChunk::load() {
     //std::cout << "Done preloading Chunk.\n";
 }
 
-void EntityChunk::draw(glm::mat4 &base, const glm::vec3& light_pos, 
-		const glm::vec3& view_pos) {
+void EntityChunk::draw(glm::mat4 &base, const glm::vec3& light_pos, const glm::vec3& view_pos) {
 
 	// shader program
 	glUseProgram(program_ID);
@@ -162,3 +161,4 @@ void EntityChunk::unload() {
 	glDeleteBuffers(1, &colorBuffer);
 	glDeleteBuffers(1, &normalBuffer);
 }
+
