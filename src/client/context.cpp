@@ -2,9 +2,9 @@
 // Created by silverly on 20/05/2021.
 //
 
-#include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <loguru.hpp>
 
 #include "context.h"
 
@@ -20,7 +20,7 @@ namespace context {
 
     GLFWwindow *init() {
         if (window != nullptr) {
-            std::cout << "Tried to init an already existing context!" << std::endl;
+            ABORT_S() << "Tried to init an already existing context!\n";
             return nullptr;
         }
 
@@ -35,19 +35,21 @@ namespace context {
 
         window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "iVy_", nullptr, nullptr);
         if (window == nullptr) {
-            std::cout << "Failed to create GLFW window" << std::endl;
             glfwTerminate();
+            ABORT_S() << "Failed to create GLFW window\n";
             return nullptr;
         }
 
         glfwMakeContextCurrent(window);
-        glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE); // Ensure we can capture the escape key being pressed below
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Hide the mouse and enable unlimited mouvement
-        glfwPollEvents();
+		// Ensure we can capture the escape key being pressed below
+        glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);         
+		// Hide the mouse and enable unlimited mouvement
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);         
+		glfwPollEvents();
         glfwSetCursorPos(window, WIN_WIDTH / 2, WIN_HEIGHT / 2);
 
         if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
-            std::cout << "Failed to initialize GLAD" << std::endl;
+            ABORT_S() << "Failed to initialize GLAD\n";
             return nullptr;
         }
 

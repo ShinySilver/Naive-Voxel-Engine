@@ -23,7 +23,7 @@ public:
     void join();
 
 private:
-    void tick();
+    void run();
 
     static int worker_count;
     int worker_id;

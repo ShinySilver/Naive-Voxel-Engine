@@ -8,11 +8,9 @@
 #include "chunk_util.h"
 
 #include <glm/glm/ext.hpp>
+#include <loguru.hpp>
 
 #include <initializer_list>
-#include <iostream>
-#include <ostream>
-#include <iostream>
 #include <vector>
 
 #define CENTER_CHUNKS

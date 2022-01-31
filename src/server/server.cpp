@@ -2,14 +2,15 @@
 // Created by silverly on 21/05/2021.
 //
 
-#include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <atomic>
-#include <thread>
+#include <loguru.hpp>
 
 #include "server.h"
 #include "../common/world/world.h"
+
+#include <atomic>
+#include <thread>
 
 namespace server{
     namespace{
@@ -17,21 +18,24 @@ namespace server{
         std::thread s;
 
         void tick(){
+			loguru::set_thread_name("server_thread");
+			LOG_S(INFO) << "Server started!";
             while (!shutting_down)
             {
                 // World.tick?
                 //
             }
-            std::cout << "Server shutting down." << std::endl;
+            LOG_S(INFO) << "Server shutting down";
         }
     }
 
     void start(){
-        std::cout << "Server starting..." << std::endl;
+        LOG_S(INFO) << "Server starting...";
 
 		// for now itializing world at server start
 		world::init();
 
+		shutting_down = false;
         s = std::thread(tick);
     }
 

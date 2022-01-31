@@ -9,9 +9,7 @@
 #define WORLD_ENTITY_ENTITYCHUNK_H_
 
 #ifndef __gl_h_
-
 #include <glad/glad.h>
-
 #endif
 
 #include "entity.h"

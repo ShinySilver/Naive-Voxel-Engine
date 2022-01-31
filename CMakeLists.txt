@@ -10,8 +10,9 @@ include_directories(includes)
 
 file(COPY ressources DESTINATION ${dir}/../build)
 
+add_definitions(-DLOGURU_WITH_STREAMS=1)
 file(GLOB_RECURSE SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 add_executable(iVy ${SRC_FILES})
 target_link_libraries(iVy glfw pthread dl freetype)
 
-target_sources(iVy PRIVATE libs/glad/glad.c)
+target_sources(iVy PRIVATE libs/glad/glad.c libs/loguru.cpp)

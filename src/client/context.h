@@ -5,7 +5,6 @@
 #ifndef IVY_CONTEXT_H
 #define IVY_CONTEXT_H
 
-
 namespace context {
     GLFWwindow *init();
 
