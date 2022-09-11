@@ -25,13 +25,12 @@
  */
 class TextRenderer {
 public:
-	TextRenderer(std::string path, int fontWidth, int fontHeight,
-			int windowWidth, int windowHeight);
+	TextRenderer(std::string path, int fontWidth, int fontHeight, int windowWidth, 
+			int windowHeight);
 	void setRatio(int windowWidth, int windowHeight);
 	void bind();
 	void unbind();
-	void renderText(std::string text, float x, float y, float scale,
-			glm::vec3 color);
+	void renderText(std::string text, float x, float y, float scale, glm::vec3 color);
 private:
 	struct Character {
 		unsigned int TextureID; // ID handle of the glyph texture

@@ -13,8 +13,8 @@
 // TODO: load_imp dans client
 
 namespace client {
-    int tick();
+    void tick();
 }
 
-
 #endif //IVY_CLIENT_H
+

@@ -14,10 +14,11 @@
 #include "../../../client/utils/mesher/chunk_util.h"
 #include "../grid.h"
 
-#include <iostream>
-#include <vector>
 #include <glm/glm/vec3.hpp>
 #include <glm/glm/ext/matrix_float4x4.hpp>
+#include <loguru.hpp>
+
+#include <vector>
 
 GLuint EntityChunk::program_ID = 0;
 GLuint EntityChunk::matrix_ID = 0;
@@ -55,7 +56,7 @@ void EntityChunk::load() {
 
     if (!program_ID) {
         // The 1st time, create and compile our GLSL program from the shaders
-        std::cout << "Loading Shader...\n";
+        LOG_S(1) << "Loading shaders...";
         program_ID = LoadShaders("ressources/shaders/chunkColor/chunkColor.vert",
                                  "ressources/shaders/chunkColor/chunkColor.frag");
 
