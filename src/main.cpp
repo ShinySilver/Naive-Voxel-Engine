@@ -1,9 +1,14 @@
 #include <iostream>
 
 #ifndef __gl_h_
+
 #include <glad/glad.h>
+
 #endif
+
 #include <GLFW/glfw3.h>
+#include <execinfo.h>
+#include <csignal>
 
 #include "client/context.h"
 #include "client/client.h"
@@ -14,8 +19,8 @@
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-int main()
-{
+int main() {
+
     /**
      * Starting the server.
      */

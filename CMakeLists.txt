@@ -11,7 +11,9 @@ include_directories(includes)
 file(COPY ressources DESTINATION ${dir}/../build)
 
 file(GLOB_RECURSE SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/**.cpp)
-add_executable(iVy ${SRC_FILES} src/common/utils/networking.cpp src/common/utils/networking.h)
+add_executable(iVy ${SRC_FILES} src/client/client_networking.cpp src/client/client_networking.h src/server/server_networking.cpp src/server/server_networking.h)
 target_link_libraries(iVy glfw pthread dl freetype)
+target_compile_options(iVy PRIVATE -fsanitize=address)
+target_link_options(iVy PRIVATE -fsanitize=address)
 
 target_sources(iVy PRIVATE libs/glad/glad.c)
