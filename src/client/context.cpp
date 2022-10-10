@@ -11,6 +11,7 @@
 #define WIN_WIDTH 1280
 #define WIN_HEIGHT 720
 #define WIN_DEFAULT_FRAMERATE 60
+#define WIN_CAPTURE_CURSOR 1
 
 namespace context {
     namespace {
@@ -42,7 +43,9 @@ namespace context {
 
         glfwMakeContextCurrent(window);
         glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE); // Ensure we can capture the escape key being pressed below
+#if WIN_CAPTURE_CURSOR != 0
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Hide the mouse and enable unlimited mouvement
+#endif
         glfwPollEvents();
         glfwSetCursorPos(window, WIN_WIDTH / 2, WIN_HEIGHT / 2);
 

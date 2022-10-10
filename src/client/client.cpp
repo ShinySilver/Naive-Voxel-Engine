@@ -10,17 +10,18 @@
 #include "client.h"
 #include "context.h"
 #include "camera.h"
-#include "../common/world/world.h"
+#include "../server/world.h"
 #include "../common/world/grid.h"
 #include "../common/utils/worker.h"
 #include "../common/utils/safe_queue.h"
+#include "../common/world/entities/entity_chunk.h"
 
 namespace client {
     namespace {
-        float win_fov = 45.0f, win_ratio = (float) (16.0 / 9.0), zfar=1e10f;
-        bool debug_mode = false, wire_mode = false, is_fullscreen = false;
+        float win_fov = 45.0f, win_ratio = (float) (16.0 / 9.0), z_far = 1e10f;
+        bool debug_mode = false, wire_mode = false, is_fullscreen = false, round_view_distance = false;
 
-        glm::mat4 _projectionMatrix = glm::perspective(win_fov, win_ratio, 0.1f, zfar);
+        glm::mat4 _projectionMatrix = glm::perspective(win_fov, win_ratio, 0.1f, z_far);
         glm::mat4 _viewMatrix, _matrix;
 
         void key_callback(GLFWwindow *window, int key, int scancode, int action,
@@ -72,7 +73,7 @@ namespace client {
         void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
             glViewport(0, 0, width, height);
             win_ratio = float(width) / float(height);
-            _projectionMatrix = glm::perspective(win_fov, win_ratio, 0.1f, zfar);
+            _projectionMatrix = glm::perspective(win_fov, win_ratio, 0.1f, z_far);
             //_textRenderer->setRatio(width, height);
         }
 
@@ -82,7 +83,7 @@ namespace client {
         SafeQueue<Entity *> preloading_queue;
         SafeQueue<Entity *> loading_queue;
         SafeQueue<Entity *> unloading_queue;
-        Entity *chunk_map[VIEW_DISTANCE * 2+1][VIEW_DISTANCE * 2+1];
+        Entity *chunk_map[VIEW_DISTANCE * 2 + 1][VIEW_DISTANCE * 2 + 1];
 
         // view distance 2, pos 2
         // (-3 -2 -1) 0 1 2 3 4 (5 6 7)
@@ -95,20 +96,21 @@ namespace client {
                 for (int dz = -VIEW_DISTANCE; dz <= VIEW_DISTANCE; dz++) {
 
                     // Naive "Round" view distance imp. For fun only. We only load in a circle around the camera
-                    if(std::pow(dx,2) + std::pow(dz,2) >= std::pow(VIEW_DISTANCE,2))
+                    if (round_view_distance && std::pow(dx, 2) + std::pow(dz, 2) >= std::pow(VIEW_DISTANCE, 2))
                         continue;
 
                     // We get the chunk in the cache corresponding to the given chunk pos
-                    e = chunk_map[((INT_MAX/2+(int)player_pos.x + dx)) % (VIEW_DISTANCE * 2+1)]
-                    [((INT_MAX/2+(int)player_pos.z + dz)) % (VIEW_DISTANCE * 2+1)];
+                    e = chunk_map[((INT_MAX / 2 + (int) player_pos.x + dx)) % (VIEW_DISTANCE * 2 + 1)]
+                    [((INT_MAX / 2 + (int) player_pos.z + dz)) % (VIEW_DISTANCE * 2 + 1)];
 
                     // If there is no chunk in the cache at this place (first few runs only)
                     if (!e) {
 
                         // Asking the server for the missing chunk, then adding it to preload queue
-                        Entity *new_chunk = world::get_cell(player_pos + glm::vec3(dx, 0, dz))[0];
-                        chunk_map[((INT_MAX/2+(int)player_pos.x + dx)) % (VIEW_DISTANCE * 2+1)]
-                        [((INT_MAX/2+(int)player_pos.z + dz)) % (VIEW_DISTANCE * 2+1)] = new_chunk;
+                        Entity *new_chunk = (Entity *) malloc(sizeof(EntityChunk));
+                        world::load_cell(player_pos + glm::vec3(dx, 0, dz), new_chunk);
+                        chunk_map[((INT_MAX / 2 + (int) player_pos.x + dx)) % (VIEW_DISTANCE * 2 + 1)]
+                        [((INT_MAX / 2 + (int) player_pos.z + dz)) % (VIEW_DISTANCE * 2 + 1)] = new_chunk;
                         preloading_queue.enqueue(new_chunk);
 
                         // FIXME: get to async gen
@@ -124,9 +126,10 @@ namespace client {
                         unloading_queue.enqueue(e);
 
                         // In any case, if there is a chunk mismatch, ask the server for the missing chunk
-                        Entity *new_chunk = world::get_cell(player_pos + glm::vec3(dx, 0, dz))[0];
-                        chunk_map[((INT_MAX/2+(int)player_pos.x + dx)) % (VIEW_DISTANCE * 2+1)]
-                        [((INT_MAX/2+(int)player_pos.z + dz)) % (VIEW_DISTANCE * 2+1)] = new_chunk;
+                        Entity *new_chunk = (Entity *) malloc(sizeof(EntityChunk));
+                        world::load_cell(player_pos + glm::vec3(dx, 0, dz), new_chunk);
+                        chunk_map[((INT_MAX / 2 + (int) player_pos.x + dx)) % (VIEW_DISTANCE * 2 + 1)]
+                        [((INT_MAX / 2 + (int) player_pos.z + dz)) % (VIEW_DISTANCE * 2 + 1)] = new_chunk;
                         preloading_queue.enqueue(new_chunk);
                     }
                 }
@@ -155,9 +158,9 @@ namespace client {
             Entity *e = preloading_queue.dequeue();
             if (e) {
                 glm::vec3 chunk_pos = grid::pos_to_chunk(e->getLocation());
-                std::cout << "Preloading chunk at chunk pos "<<chunk_pos.x<<";"<<chunk_pos.y<<";"<<chunk_pos.z
-                <<" and pos "<< e->getLocation().position.x << ";" << e->getLocation().position.y
-                << ";" << e->getLocation().position.z << "\n";
+                std::cout << "Preloading chunk at chunk pos " << chunk_pos.x << ";" << chunk_pos.y << ";" << chunk_pos.z
+                          << " and pos " << e->getLocation().position.x << ";" << e->getLocation().position.y
+                          << ";" << e->getLocation().position.z << "\n";
                 e->preload();
                 loading_queue.enqueue(e);
             }
@@ -210,11 +213,13 @@ namespace client {
                     if (it != loaded_entities.end()) { loaded_entities.erase(it); }
 
                     glm::vec3 chunk_pos = grid::pos_to_chunk(tmp->getLocation());
-                    std::cout << "Unloading chunk at chunk pos "<<chunk_pos.x<<";"<<chunk_pos.y<<";"<<chunk_pos.z
-                              <<" and pos "<< tmp->getLocation().position.x << ";" << tmp->getLocation().position.y
+                    std::cout << "Unloading chunk at chunk pos " << chunk_pos.x << ";" << chunk_pos.y << ";"
+                              << chunk_pos.z
+                              << " and pos " << tmp->getLocation().position.x << ";" << tmp->getLocation().position.y
                               << ";" << tmp->getLocation().position.z << "\n";
 
-                    delete tmp; // TODO: think about chunk serialization.
+                    world::unload_cell(tmp);
+                    free(tmp); // TODO: think about chunk serialization.
                 }
                 while (!loading_queue.empty()) {
                     tmp = loading_queue.dequeue();
@@ -222,8 +227,9 @@ namespace client {
                     loaded_entities.emplace_back(tmp);
 
                     glm::vec3 chunk_pos = grid::pos_to_chunk(tmp->getLocation());
-                    std::cout << "Loading chunk at chunk pos "<<chunk_pos.x<<";"<<chunk_pos.y<<";"<<chunk_pos.z
-                              <<" and pos "<< tmp->getLocation().position.x << ";" << tmp->getLocation().position.y
+                    std::cout << "Loading chunk at chunk pos " << chunk_pos.x << ";" << chunk_pos.y << ";"
+                              << chunk_pos.z
+                              << " and pos " << tmp->getLocation().position.x << ";" << tmp->getLocation().position.y
                               << ";" << tmp->getLocation().position.z << "\n";
                 }
             }
@@ -240,7 +246,7 @@ namespace client {
              * Rendering
              */
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            for (auto const e : loaded_entities) {
+            for (auto const e: loaded_entities) {
                 e->lock();
                 e->fastUpdate();
                 e->draw(_matrix);

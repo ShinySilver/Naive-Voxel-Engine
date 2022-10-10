@@ -1,27 +1,19 @@
-#include "world.h"
-#include "chunk.h"
-#include "../../client/utils/mesher/chunk_util.h"
-#include "entities/entity_chunk.h"
+//
+// Created by silverly on 20/05/2021.
+//
 
-#include <cmath>
+#include <vector>
+#include "generator.h"
+#include "../common/world/entities/entity_chunk.h"
 
 #define CHUNK_SIDE 16
-
 #define VOXEL_STONE Color(0.8, 0.8, 0.8)
 #define VOXEL_GRASS Color(0.1, 0.6, 0.1)
-#define VOXEL_AIR Color(0.0, 0.0, 0.0)
 
-#define TICK_RANGE 64
-#define VIEW_RANGE 128
-
-#include "../../client/utils/mesher/chunk_util.h"
-
-namespace world {
+namespace generator {
     namespace {
-        static std::vector<Entity *> entities;
-
-        std::vector<Entity *> generate_island(uint32_t sea_level, uint32_t height,
-                                              uint32_t depth, glm::vec3 position) {
+        void generate_island(Entity *entity, uint32_t sea_level, uint32_t height,
+                             uint32_t depth, glm::vec3 position) {
 
             //generating upper enveloppe
             std::vector<char> upper_env;
@@ -72,36 +64,12 @@ namespace world {
                 }
             }
 
-            auto chunk_entity = new EntityChunk(Chunk(std::move(voxels), CHUNK_SIDE), Location(position));
-            chunk_entity->preload();
-
-            return std::move(std::vector<Entity *>{chunk_entity});
+            new(entity) EntityChunk(Chunk(std::move(voxels), CHUNK_SIDE), Location(position));
         }
     }
 
-
-    void init() { // TODO: eventually remove?
-//        auto island = generate_island(7, 8, 6);
-//        entities.reserve(entities.size() + island.size());
-//
-//        for (auto entity : island) {
-//            entities.emplace_back(entity);
-//        }
+    void generate(const glm::vec3 &cell_coordinate, Entity *entity) {
+        generate_island(entity, 7, 8, 6, cell_coordinate
+                                         * float(DEFAULT_CHUNK_SIDE * VOXEL_SIZE));
     }
-
-    std::vector<Entity *> &get_entities() {// TODO: remove this func
-        return entities;
-    }
-
-    std::vector<Entity *> get_cell(const glm::vec3 &cell_coordinate) {
-        return generate_island(7, 8, 6, cell_coordinate
-        * float(DEFAULT_CHUNK_SIDE * VOXEL_SIZE));
-    }
-
-    void get_cell_async(glm::vec3 &cell_coordinate, std::function<void(const std::vector<Entity *> &cell)> callback) {
-        callback(generate_island(7, 8, 6, cell_coordinate
-        * float(DEFAULT_CHUNK_SIDE * VOXEL_SIZE)));
-    }
-
-} //namespace world
-
+}

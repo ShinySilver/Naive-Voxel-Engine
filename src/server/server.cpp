@@ -1,5 +1,5 @@
 //
-// Created by silverly on 21/05/2021.
+// Created by silverly on 20/05/2021.
 //
 
 #include <iostream>
@@ -9,7 +9,7 @@
 #include <thread>
 
 #include "server.h"
-#include "../common/world/world.h"
+#include "world.h"
 
 namespace server{
     namespace{
@@ -19,8 +19,7 @@ namespace server{
         void tick(){
             while (!shutting_down)
             {
-                // World.tick?
-                //
+                world::tick();
             }
             std::cout << "Server shutting down." << std::endl;
         }
@@ -29,7 +28,7 @@ namespace server{
     void start(){
         std::cout << "Server starting..." << std::endl;
 
-		// for now itializing world at server start
+		// for now initializing world at server start
 		world::init();
 
         s = std::thread(tick);
