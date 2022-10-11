@@ -19,7 +19,7 @@ namespace camera {
     namespace {
         float _horizontalAngle = 3.14f;
         float _verticalAngle = 0.0f;
-        float _speedModifier = 30.0f; // 3 units / second
+        float _speedModifier = 300.0f; // 3 units / second
         float _mouseSpeedModifier = 0.005f;
         Location _location;
         std::mutex _location_mutex;
