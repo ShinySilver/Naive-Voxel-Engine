@@ -2,9 +2,9 @@
 // Created by silverly on 20/05/2021.
 //
 
-#include "generator.h"
+#include "../../server/generator.h"
 #include "world.h"
-#include "../client/utils/mesher/chunk_util.h"
+#include "../../client/utils/mesher/chunk_util.h"
 
 #define TICK_RANGE 64
 #define VIEW_RANGE 128
@@ -27,7 +27,7 @@ namespace world {
     }
 
     void unload_cell(const Entity *entity) {
-        entity->~Entity();
+        // Currently doing nothing
     }
 
     void load_cell(const glm::vec3 &cell_coordinate, Entity *entity) {

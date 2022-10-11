@@ -9,7 +9,8 @@
 #include <thread>
 
 #include "server.h"
-#include "world.h"
+#include "../common/world/world.h"
+#include "server_networking.h"
 
 namespace server{
     namespace{
@@ -28,19 +29,21 @@ namespace server{
     void start(){
         std::cout << "Server starting..." << std::endl;
 
-		// for now initializing world at server start
 		world::init();
+        server_networking::init();
 
         s = std::thread(tick);
     }
 
     void stop(){
         shutting_down = true;
+        server_networking::stop();
     }
 
     void join(){
         if(s.joinable()){
             s.join();
         }
+        server_networking::join();
     }
 }

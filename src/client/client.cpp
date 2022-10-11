@@ -10,7 +10,7 @@
 #include "client.h"
 #include "context.h"
 #include "camera.h"
-#include "../server/world.h"
+#include "../common/world/world.h"
 #include "../common/world/grid.h"
 #include "../common/utils/worker.h"
 #include "../common/utils/safe_queue.h"
@@ -207,6 +207,7 @@ namespace client {
                               << ";" << tmp->getLocation().position.z << "\n";
 
                     world::unload_cell(tmp);
+                    tmp->~Entity();
                     free(tmp); // TODO: think about chunk serialization.
                 }
                 while (!loading_queue.empty()) {

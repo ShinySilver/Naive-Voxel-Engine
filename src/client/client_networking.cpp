@@ -4,7 +4,7 @@
 
 #include <functional>
 #include "client_networking.h"
-#include "../server/world.h"
+#include "../common/world/world.h"
 
 namespace client_networking {
     void init(){
