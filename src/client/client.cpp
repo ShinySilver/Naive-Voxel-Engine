@@ -166,11 +166,21 @@ namespace client {
                 for (int dy = -VIEW_DISTANCE; dy <= VIEW_DISTANCE; dy++) {
                     for (int dz = -VIEW_DISTANCE; dz <= VIEW_DISTANCE; dz++) {
                         e = (Entity *) malloc(sizeof(EntityChunk));
-                        world::load_cell(player_pos + glm::vec3(dx, dy, dz), e);
+                        client_networking::load_cell_async(player_pos + glm::vec3(dx, dy, dz), e,
+                                                           [player_pos, dx, dy, dz](Entity *new_chunk) {
+                                                               chunk_map[((INT_MAX / 2 + (int) player_pos.x + dx)) %
+                                                                         (VIEW_DISTANCE * 2 + 1)][
+                                                                       ((INT_MAX / 2 + (int) player_pos.y + dy)) %
+                                                                       (VIEW_DISTANCE * 2 + 1)]
+                                                               [((INT_MAX / 2 + (int) player_pos.z + dz)) %
+                                                                (VIEW_DISTANCE * 2 + 1)] = new_chunk;
+                                                               preloading_queue.enqueue(new_chunk);
+                                                           });
+                        /*world::load_cell(player_pos + glm::vec3(dx, dy, dz), e);
                         chunk_map[((INT_MAX / 2 + (int) player_pos.x + dx)) % (VIEW_DISTANCE * 2 + 1)][
                                 ((INT_MAX / 2 + (int) player_pos.y + dy)) % (VIEW_DISTANCE * 2 + 1)]
                         [((INT_MAX / 2 + (int) player_pos.z + dz)) % (VIEW_DISTANCE * 2 + 1)] = e;
-                        preloading_queue.enqueue(e);
+                        preloading_queue.enqueue(e);*/
                     }
                 }
             }

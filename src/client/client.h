@@ -7,7 +7,7 @@
 
 #include "../common/world/entities/entity.h"
 
-#define VIEW_DISTANCE 4
+#define VIEW_DISTANCE 8
 #define TICK_DISTANCE 4
 
 // TODO: load_imp dans client

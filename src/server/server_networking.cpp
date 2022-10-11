@@ -8,6 +8,8 @@
 #include "../common/utils/worker.h"
 #include "../common/world/world.h"
 
+#define GENERATION_WORKER_COUNT 8
+
 namespace server_networking {
     namespace {
         struct ChunkGenRequest {
@@ -31,14 +33,14 @@ namespace server_networking {
     void init() {
         std::cout << "Server starting its worker threads...." << std::endl;
         workers = std::vector<Worker *>();
-        for (int i = 0; i < 8; ++i) {
+        for (int i = 0; i < GENERATION_WORKER_COUNT; ++i) {
             workers.emplace_back(new Worker("world_generation_server_worker", worker_tick));
         }
     }
 
     void stop() {
         std::cout << "Unlocking world generation queue. Server workers stopping...\n";
-        for (int i = 0; i < 3; ++i) {
+        for (int i = 0; i < GENERATION_WORKER_COUNT; ++i) {
             workers[i]->stop();
         }
         generation_queue.unlock_all();
@@ -46,7 +48,7 @@ namespace server_networking {
 
     void join() {
         std::cout << "Waiting for server workers to stop...\n";
-        for (int i = 0; i < 3; ++i) {
+        for (int i = 0; i < GENERATION_WORKER_COUNT; ++i) {
             workers[i]->join();
             delete workers[i];
         }
