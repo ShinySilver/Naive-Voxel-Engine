@@ -23,6 +23,7 @@ namespace server{
                 world::tick();
             }
             std::cout << "Server shutting down." << std::endl;
+            server_networking::stop();
         }
     }
 
@@ -37,7 +38,6 @@ namespace server{
 
     void stop(){
         shutting_down = true;
-        server_networking::stop();
     }
 
     void join(){
