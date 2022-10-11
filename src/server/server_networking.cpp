@@ -31,18 +31,17 @@ namespace server_networking {
     void init() {
         std::cout << "Server starting its worker threads...." << std::endl;
         workers = std::vector<Worker *>();
-        for (int i = 0; i < 3; ++i) {
+        for (int i = 0; i < 8; ++i) {
             workers.emplace_back(new Worker("world_generation_server_worker", worker_tick));
         }
     }
 
     void stop() {
         std::cout << "Unlocking world generation queue. Server workers stopping...\n";
-        generation_queue.unlock_all();
         for (int i = 0; i < 3; ++i) {
             workers[i]->stop();
         }
-
+        generation_queue.unlock_all();
     }
 
     void join() {
