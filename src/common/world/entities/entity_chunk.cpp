@@ -14,13 +14,17 @@
 #include "../../../client/utils/mesher/chunk_util.h"
 #include "../grid.h"
 
-#include <iostream>
-#include <vector>
 #include <glm/glm/vec3.hpp>
 #include <glm/glm/ext/matrix_float4x4.hpp>
+#include <loguru.hpp>
 
-GLuint EntityChunk::programID = 0;
-GLuint EntityChunk::matrixID = 0;
+#include <vector>
+
+GLuint EntityChunk::program_ID = 0;
+GLuint EntityChunk::matrix_ID = 0;
+GLuint EntityChunk::normal_mat_ID = 0;
+GLuint EntityChunk::light_ID = 0;
+GLuint EntityChunk::view_ID = 0;
 
 EntityChunk::EntityChunk(Chunk chunk) :
         _chunk(std::move(chunk)) {}
@@ -49,14 +53,17 @@ void EntityChunk::load() {
     glGenVertexArrays(1, &vertexArrayID);
     glBindVertexArray(vertexArrayID);
 
-    if (!programID) {
+    if (!program_ID) {
         // The 1st time, create and compile our GLSL program from the shaders
-        std::cout << "Loading Shader...\n";
-        programID = LoadShaders("ressources/shaders/chunkColor/chunkColor.vs",
-                                "ressources/shaders/chunkColor/chunkColor.fs");
+        LOG_S(1) << "Loading shaders...";
+        program_ID = LoadShaders("ressources/shaders/chunkColor/chunkColor.vert",
+                                 "ressources/shaders/chunkColor/chunkColor.frag");
 
         // Get a handle for our "MVP" uniform
-        matrixID = glGetUniformLocation(programID, "MVP");
+        matrix_ID = glGetUniformLocation(program_ID, "MVP");
+		normal_mat_ID = glGetUniformLocation(program_ID, "normal_mat");
+		light_ID = glGetUniformLocation(program_ID, "light_position");
+		view_ID = glGetUniformLocation(program_ID, "view_position");
     }
 
     //std::cout << "Creating VAB...\n";
@@ -72,20 +79,38 @@ void EntityChunk::load() {
     glGenBuffers(1, &colorBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
     glBufferData(GL_ARRAY_BUFFER, _mesh->colors.size() * sizeof(glm::vec3),
-                 _mesh->colors.data(),
-                 GL_STATIC_DRAW);
+                 _mesh->colors.data(), GL_STATIC_DRAW);
+
+	// 3rd attribute, normals
+	glGenBuffers(1, &normalBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
+	glBufferData(GL_ARRAY_BUFFER, _mesh->normals.size() * sizeof(glm::vec3),
+				_mesh->normals.data(), GL_STATIC_DRAW);
 
     delete _mesh;
     _is_loaded = true;
     //std::cout << "Done preloading Chunk.\n";
 }
 
-void EntityChunk::draw(glm::mat4 &base) {
-    // Use our shader
-    glUseProgram(programID);
+void EntityChunk::draw(glm::mat4 &base, const glm::vec3& light_pos, const glm::vec3& view_pos) {
 
-    ShaderBase::loadMVP(matrixID, base, _extraPosition, _extraRotation);
-    glBindVertexArray(vertexArrayID);
+	// shader program
+	glUseProgram(program_ID);
+
+	// uniforms
+	auto MVP = glm::rotate( glm::rotate( glm::rotate(
+					glm::translate(base,_extraPosition), 
+					_extraRotation.x, glm::vec3(1.0f,0.0f, 0.0f)), 
+				_extraRotation.y, glm::vec3(0.0f,1.0f, 0.0f)), 
+			_extraRotation.z, glm::vec3(0.0f,0.0f, 1.0f));
+
+	glUniformMatrix4fv(matrix_ID, 1, GL_FALSE, glm::value_ptr(MVP));
+	glUniformMatrix3fv(normal_mat_ID, 1, GL_FALSE, glm::value_ptr(_normal_matrix));
+	glUniform3fv(light_ID, 1, glm::value_ptr(light_pos));
+	glUniform3fv(view_ID, 1, glm::value_ptr(view_pos));
+
+	// vertex array
+	glBindVertexArray(vertexArrayID);
 
     // 1rst attribute buffer : vertices
     glEnableVertexAttribArray(0);
@@ -109,18 +134,31 @@ void EntityChunk::draw(glm::mat4 &base) {
                           (void *) 0    // array buffer offset
     );
 
-    // Draw the triangles !
-    glDrawArrays(GL_TRIANGLES, 0, verticeBufferSize);
+	// 3rd attribute buffer : normals
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
+	glVertexAttribPointer(2, 
+			3,
+			GL_FLOAT,
+			GL_FALSE,
+			0,
+			(void*) 0);
 
-    // And then we unbind everything
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
-    glBindVertexArray(0);
+	// Draw the triangles !
+	glDrawArrays(GL_TRIANGLES, 0, verticeBufferSize);
+
+	// And then we unbind everything
+	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
+	glBindVertexArray(0);
 }
 
 void EntityChunk::unload() {
-    glDeleteVertexArrays(1, &vertexArrayID);
-    glDeleteProgram(programID);
-    glDeleteBuffers(1, &vertexBuffer);
-    glDeleteBuffers(1, &colorBuffer);
+	glDeleteVertexArrays(1, &vertexArrayID);
+	glDeleteProgram(program_ID);
+	glDeleteBuffers(1, &vertexBuffer);
+	glDeleteBuffers(1, &colorBuffer);
+	glDeleteBuffers(1, &normalBuffer);
 }
+

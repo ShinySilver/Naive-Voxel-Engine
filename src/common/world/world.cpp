@@ -34,6 +34,7 @@ namespace world {
         generator::generate(cell_coordinate, entity);
     }
 
+
     void load_cell_with_callback(const glm::vec3 &cell_coordinate, Entity *entity, std::function<void(Entity *cell)> callback) {
         generator::generate(cell_coordinate, entity);
         callback(entity);

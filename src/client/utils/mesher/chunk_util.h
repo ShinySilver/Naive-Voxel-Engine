@@ -9,6 +9,7 @@
 #define WORLD_DATA_CHUNKUTIL_H_
 
 #include <vector>
+
 #include <glm/glm/vec3.hpp>
 #include "../../../common/world/chunk.h"
 
@@ -20,6 +21,7 @@
  *
  */
 namespace ChunkUtil {
+
 enum MesherType {
 	GREEDY, NAIVE_SURFACE_NET, NAIVE_WITH_CULLING
 };
@@ -27,6 +29,7 @@ enum MesherType {
 typedef struct {
 	std::vector<glm::vec3> vertices;
 	std::vector<Color> colors;
+	std::vector<glm::vec3> normals;
 } Mesh;
 
 Mesh* naiveSurfaceNetsMesh(Chunk &chunk);
@@ -34,6 +37,7 @@ Mesh* greedyMesh(Chunk& chunk);
 Mesh* naiveMeshWithCulling(Chunk &chunk);
 
 void generateChunkMesh(Chunk &chunk, MesherType type);
-}
+
+} //namespace ChunkUtil
 
 #endif /* WORLD_DATA_CHUNKUTIL_H_ */

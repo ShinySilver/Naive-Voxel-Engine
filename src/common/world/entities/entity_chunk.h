@@ -9,9 +9,7 @@
 #define WORLD_ENTITY_ENTITYCHUNK_H_
 
 #ifndef __gl_h_
-
 #include <glad/glad.h>
-
 #endif
 
 #include "entity.h"
@@ -28,22 +26,29 @@ public:
 
     virtual ~EntityChunk() = default;
 
-    virtual void preload() override;
-
-    virtual void load() override;
-
-    virtual void draw(glm::mat4 &) override;
-
-    virtual void unload() override;
+	virtual void preload() override;
+	virtual void load() override;
+	virtual void draw(glm::mat4&, const glm::vec3& light_dir, const glm::vec3& view_pos) override;
+	virtual void unload() override;
 
 private:
-    static GLuint programID, matrixID;
-    GLuint vertexArrayID = 0, colorArrayID = 0,
-            vertexBuffer = 0, colorBuffer = 0;
-    int verticeBufferSize = 0;
+	static GLuint program_ID, 
+		   matrix_ID,
+		   normal_mat_ID,
+		   light_ID,
+		   view_ID;
+
+	GLuint vertexArrayID = 0, 
+		   colorArrayID = 0, 
+		   vertexBuffer = 0, 
+		   colorBuffer = 0,
+		   normalBuffer = 0;
+
+	int verticeBufferSize = 0;
 
     Chunk _chunk;
     ChunkUtil::Mesh *_mesh;
 };
 
 #endif /* WORLD_ENTITY_ENTITYCHUNK_H_ */
+

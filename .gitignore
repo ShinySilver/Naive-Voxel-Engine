@@ -8,5 +8,5 @@ tags
 *.cbp
 Testing
 *.vim
-
+*.log
 

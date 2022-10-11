@@ -1,13 +1,13 @@
 //
 // Created by silverly on 20/05/2021.
 //
+#include "client.h"
 
-#include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm/gtc/matrix_transform.hpp>
+#include <loguru.hpp>
 
-#include "client.h"
 #include "context.h"
 #include "camera.h"
 #include "../common/world/world.h"
@@ -17,6 +17,8 @@
 #include "../common/world/entities/entity_chunk.h"
 #include "client_networking.h"
 
+#include <sstream>
+
 namespace client {
     namespace {
         float win_fov = 45.0f, win_ratio = (float) (16.0 / 9.0), z_far = 1e10f;
@@ -25,22 +27,21 @@ namespace client {
         glm::mat4 _projectionMatrix = glm::perspective(win_fov, win_ratio, 0.1f, z_far);
         glm::mat4 _viewMatrix, _matrix;
 
-        void key_callback(GLFWwindow *window, int key, int scancode, int action,
-                          int mods) {
+		void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
             if (action == GLFW_PRESS) {
                 switch (key) {
                     case GLFW_KEY_F1:
                         wire_mode = !wire_mode;
                         glPolygonMode(GL_FRONT_AND_BACK, wire_mode ? GL_LINE : GL_FILL);
-                        std::cout << (wire_mode ? "Enabling" : "Disabling") << " wire mode." << std::endl;
+                        LOG_S(INFO) << (wire_mode ? "Enabling" : "Disabling") << " wire mode";
                         break;
                     case GLFW_KEY_F2:
                         debug_mode = !debug_mode;
                         if (debug_mode) {
-                            std::cout << "Disabling OpenGL culling." << std::endl;
+                            LOG_S(INFO) << "Disabling OpenGL culling";
                             glDisable(GL_CULL_FACE);
                         } else {
-                            std::cout << "Enabling OpenGL culling." << std::endl;
+                            LOG_S(INFO) << "Enabling OpenGL culling";
                             glEnable(GL_CULL_FACE);
                         }
                         break;
@@ -49,7 +50,7 @@ namespace client {
                         context::setFullscreen(is_fullscreen);
                         break;
                     case GLFW_KEY_ESCAPE:
-                        std::cout << "User pressed Escape. Client will now exit." << std::endl;
+                        LOG_S(INFO) << "User pressed Escape. Client will now exit";
                         glfwSetWindowShouldClose(window, true);
                         break;
                     case GLFW_KEY_LEFT_ALT:
@@ -67,7 +68,6 @@ namespace client {
                     default:
                         break;
                 }
-
             }
         }
 
@@ -89,7 +89,6 @@ namespace client {
         void main_worker_tick() {
             glm::vec3 player_pos = grid::pos_to_chunk(camera::get_location());
             Entity *e;
-
             for (int dx = -VIEW_DISTANCE; dx <= VIEW_DISTANCE; dx++) {
                 for (int dy = -VIEW_DISTANCE; dy <= VIEW_DISTANCE; dy++) {
                     for (int dz = -VIEW_DISTANCE; dz <= VIEW_DISTANCE; dz++) {
@@ -97,6 +96,7 @@ namespace client {
                         // Naive "Round" view distance imp. For fun only. We only *load* in a circle around the camera
                         if (round_view_distance && std::pow(dx, 2) + std::pow(dz, 2) >= std::pow(VIEW_DISTANCE, 2))
                             continue;
+
 
                         // We get the chunk in the cache corresponding to the given chunk pos
                         e = chunk_map[((INT_MAX / 2 + (int) player_pos.x + dx)) % (VIEW_DISTANCE * 2 + 1)][
@@ -106,6 +106,7 @@ namespace client {
                         // Skipping loading chunks - we are waiting for them to load before unloading 'em
                         if (e == 0 || !e->is_loaded())
                             continue;
+
 
                         // If the chunk is out of view distance, mark it for unload & replace it with a new one
                         if (grid::pos_to_chunk(e->getLocation()) != player_pos + glm::vec3(dx, dy, dz)) {
@@ -135,26 +136,27 @@ namespace client {
             Entity *e = preloading_queue.dequeue();
             if (e) {
                 glm::vec3 chunk_pos = grid::pos_to_chunk(e->getLocation());
-                std::cout << "Preloading chunk at chunk pos " << chunk_pos.x << ";" << chunk_pos.y << ";"
-                          << chunk_pos.z
-                          << " and pos " << e->getLocation().position.x << ";" << e->getLocation().position.y
-                          << ";" << e->getLocation().position.z << "\n";
+                DLOG_S(4) << "Preloading chunk at chunk pos "
+						 << chunk_pos.x << ";" 
+						 << chunk_pos.y << ";"
+						 << chunk_pos.z << " and pos "
+						 << e->getLocation().position.x << ";" 
+						 << e->getLocation().position.y << ";" 
+						 << e->getLocation().position.z << "";
+
                 e->preload();
                 loading_queue.enqueue(e);
             }
         }
     }
 
-    int tick() {
+    void tick() {
 
         /**
          * Creating context
          */
         GLFWwindow *window = nullptr;
-        if (!(window = context::init())) {
-            std::cout << "Could not init context!" << std::endl;
-            return -1;
-        }
+        if (!(window = context::init())) ABORT_S() << "Could not init context!";
 
         /**
          * Initializing chunk map
@@ -189,11 +191,13 @@ namespace client {
         /**
          * Starting workers
          */
-        std::cout << "Client starting its worker threads...." << std::endl;
+        LOG_S(1) << "Client starting its worker threads....";
         workers = std::vector<Worker *>();
         workers.emplace_back(new Worker("main_client_worker", main_worker_tick));
         for (int i = 0; i < 2; ++i) {
-            workers.emplace_back(new Worker("secondary_client_worker", worker_tick));
+			std::stringstream name;
+			name << "client_worker_" << i+1;
+            workers.emplace_back(new Worker(name.str(), worker_tick));
         }
 
         /**
@@ -206,7 +210,7 @@ namespace client {
         /**
          * Render loop!
          */
-        std::cout << "Client ticking!" << std::endl;
+        LOG_S(1) << "Client ticking!";
         while (!glfwWindowShouldClose(window)) {
 
             /**
@@ -221,11 +225,13 @@ namespace client {
                     if (it != loaded_entities.end()) { loaded_entities.erase(it); }
 
                     glm::vec3 chunk_pos = grid::pos_to_chunk(tmp->getLocation());
-                    std::cout << "Unloading chunk at chunk pos " << chunk_pos.x << ";" << chunk_pos.y << ";"
-                              << chunk_pos.z
-                              << " and pos " << tmp->getLocation().position.x << ";"
-                              << tmp->getLocation().position.y
-                              << ";" << tmp->getLocation().position.z << "\n";
+                    DLOG_S(4) << "Unloading chunk at chunk pos "
+							    << chunk_pos.x << ";"
+							    << chunk_pos.y <<";"
+							    << chunk_pos.z <<" and pos "
+							    << tmp->getLocation().position.x << ";" 
+							    << tmp->getLocation().position.y << ";" 
+							    << tmp->getLocation().position.z << "";
 
                     world::unload_cell(tmp);
                     tmp->~Entity();
@@ -237,11 +243,13 @@ namespace client {
                     loaded_entities.emplace_back(tmp);
 
                     glm::vec3 chunk_pos = grid::pos_to_chunk(tmp->getLocation());
-                    std::cout << "Loading chunk at chunk pos " << chunk_pos.x << ";" << chunk_pos.y << ";"
-                              << chunk_pos.z
-                              << " and pos " << tmp->getLocation().position.x << ";"
-                              << tmp->getLocation().position.y
-                              << ";" << tmp->getLocation().position.z << "\n";
+                    DLOG_S(4) << "Loading chunk at chunk pos "
+							    << chunk_pos.x << ";"
+							    << chunk_pos.y << ";"
+							    << chunk_pos.z << " and pos "
+							    << tmp->getLocation().position.x << ";" 
+							    << tmp->getLocation().position.y << ";" 
+							    << tmp->getLocation().position.z << "";
                 }
             }
 
@@ -260,7 +268,9 @@ namespace client {
             for (auto const entity: loaded_entities) {
                 entity->lock();
                 entity->fastUpdate();
-                entity->draw(_matrix);
+                //entity->draw(_matrix);
+                //TODO temporary light pos
+                e->draw(_matrix, glm::vec3(100.0, 100.0, 100.0), camera::get_location().position);
                 entity->unlock();
             }
             glfwSwapBuffers(window);
@@ -274,7 +284,7 @@ namespace client {
         /**
          * Sync with client workers
          */
-        std::cout << "Unlocking preloading queue. Waiting for client workers to stop...\n";
+        LOG_S(1) << "Unlocking preloading queue. Waiting for client workers to stop...";
         for (int i = 0; i < 3; ++i) {
             workers[i]->stop();
         }
@@ -283,7 +293,6 @@ namespace client {
             workers[i]->join();
             delete workers[i];
         }
-
-        return 0;
     }
 }
+
