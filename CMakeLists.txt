@@ -8,7 +8,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${dir}/../build)
 
 include_directories(includes)
 
-file(COPY ressources DESTINATION ${dir}/../build)
+file(COPY resources DESTINATION ${dir}/../build)
 
 add_definitions(-DLOGURU_WITH_STREAMS=1)
 file(GLOB_RECURSE SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)

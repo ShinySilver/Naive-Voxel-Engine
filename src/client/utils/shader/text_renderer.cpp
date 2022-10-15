@@ -25,8 +25,8 @@ TextRenderer::TextRenderer(std::string path, int fontWidth, int fontHeight, int 
 
 	// The shader, with the screen size as uniform
 	if (!_programId) {
-		_programId = LoadShaders("ressources/shaders/text/text.vs",
-				"ressources/shaders/text/text.fs");
+		_programId = LoadShaders("resources/shaders/text/text.vs",
+				"resources/shaders/text/text.fs");
 		setRatio(windowWidth, windowHeight);
 	}
 	FT_Library ft;

@@ -270,7 +270,7 @@ namespace client {
                 entity->fastUpdate();
                 //entity->draw(_matrix);
                 //TODO temporary light pos
-                e->draw(_matrix, glm::vec3(100.0, 100.0, 100.0), camera::get_location().position);
+                entity->draw(_matrix, glm::vec3(100.0, 100.0, 100.0), camera::get_location().position);
                 entity->unlock();
             }
             glfwSwapBuffers(window);

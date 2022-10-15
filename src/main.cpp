@@ -35,11 +35,6 @@ int main(int argc, char** argv) {
     server::start();
 
 	/**
-	 * Starting the server.
-	 */
-	server::start();
-
-	/**
 	 * Start the client. Blocking.
 	 */
 	client::tick();
