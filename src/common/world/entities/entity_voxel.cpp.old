@@ -13,21 +13,21 @@
 #include <iostream>
 #include <vector>
 
-void EntityVoxel::preload() {
+void EntityVoxel::load() {
 	std::cout << "Preloading voxel.\n";
 	glGenVertexArrays(1, &vertexArrayID);
 	glBindVertexArray(vertexArrayID);
 
 	// Create and compile our GLSL program from the shaders
 	programID = LoadShaders(
-			"ressources/shaders/texture/TransformVertexShader.vertexshader",
-			"ressources/shaders/texture/TextureFragmentShader.fragmentshader");
+			"resources/shaders/texture/TransformVertexShader.vertexshader",
+			"resources/shaders/texture/TextureFragmentShader.fragmentshader");
 
 	// Get a handle for our "MVP" uniform
 	matrixID = glGetUniformLocation(programID, "MVP");
 
 	// Load the texture
-	texture = loadDDS("ressources/models/example/uvmap.DDS");
+	texture = loadDDS("resources/models/example/uvmap.DDS");
 
 	// Get a handle for our "myTextureSampler" uniform
 	textureID = glGetUniformLocation(programID, "myTextureSampler");
@@ -36,7 +36,7 @@ void EntityVoxel::preload() {
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec2> uvs;
 	std::vector<glm::vec3> normals; // Won't be used at the moment.
-	loadOBJ("ressources/models/example/cube.obj", vertices, uvs, normals);
+	loadOBJ("resources/models/example/cube.obj", vertices, uvs, normals);
 
 	// Load it into a VBO
 	glGenBuffers(1, &vertexBuffer);
@@ -50,6 +50,7 @@ void EntityVoxel::preload() {
 	glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0],
 	GL_STATIC_DRAW);
 
+    _is_loaded = true;
 	std::cout << "Done preloading voxel.\n";
 }
 

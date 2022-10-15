@@ -1,15 +1,17 @@
 //
-// Created by silverly on 21/05/2021.
+// Created by silverly on 20/05/2021.
 //
 
-#include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <atomic>
-#include <thread>
-//#include "../common/world.h"
+#include <loguru.hpp>
 
 #include "server.h"
+#include "../common/world/world.h"
+#include "server_networking.h"
+
+#include <atomic>
+#include <thread>
 
 namespace server{
     namespace{
@@ -17,16 +19,24 @@ namespace server{
         std::thread s;
 
         void tick(){
+			loguru::set_thread_name("server_thread");
+			LOG_S(INFO) << "Server started!";
             while (!shutting_down)
             {
-
+                world::tick();
             }
-            std::cout << "Server shutting down." << std::endl;
+            LOG_S(INFO) << "Server shutting down";
+            server_networking::stop();
         }
     }
 
     void start(){
-        std::cout << "Server starting." << std::endl;
+        LOG_S(INFO) << "Server starting...";
+
+		world::init();
+        server_networking::init();
+
+		shutting_down = false;
         s = std::thread(tick);
     }
 
@@ -38,5 +48,6 @@ namespace server{
         if(s.joinable()){
             s.join();
         }
+        server_networking::join();
     }
 }

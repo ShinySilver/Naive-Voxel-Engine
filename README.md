@@ -1,3 +1,7 @@
+# iVy
+
+![A very random screenshot from a very experimental build](/resources/screenshots/experimental_build_1.png?raw=true)
+
 Bon du coup... On a notre compilation avec CMake
 qui marche. Aucune idée de comment on active l'opti,
 mais bon au moins on produit un executable.
@@ -6,20 +10,21 @@ Pour l'instant on charge:
  - glad
  - glfw3
  - pthread
-
-On va avoir besoin de:
  - glm
 
-Et peut-être de:
- - enet
+Et peut-être qu'un jour on utilisera:
+ - enet (réseau)
+ - imgui (ui de debug)
+ - wangle (réseau)
 
 Au niveau de l'architecture, je veux rester kiss le
 plus longtemps possible. Dans l'idée, ce qui est dans client est
 utilisé uniquement dans le thread principal, dans server ce qui est
 dans les autres threads, et dans common les enums partagés. C'est 
 server qui est chargé de maintenir la sync avec la remote - ou non.
-Il a donc son propre jeu de paquets
+Il a donc un jeu de paquets, mais ni client ni common ne doivent (a priori?) toucher à ces paquets.
 
+Le plan initial est le suivant, mais depuis le temps on a bien avancé et il ne ressemble plus vraiment à ça:
 Dans client :
  - un namespace qui gère le contexte openGl créé par glfw
  - un namespace qui gère la machine à état interne du client. En

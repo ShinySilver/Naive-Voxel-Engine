@@ -8,35 +8,36 @@
 #include "text_renderer.h"
 
 #include <GLFW/glfw3.h>
-#include <iostream>
-#include <iterator>
-#include <utility>
 #include <freetype/freetype.h>
 #include <glm/glm/ext/matrix_float4x4.hpp>
 #include <glm/glm/gtc/type_ptr.hpp>
+#include <loguru.hpp>
 
 #include "../loaders/shader_loader.h"
 
+#include <iterator>
+#include <utility>
+
 GLuint TextRenderer::_programId = 0;
 
-TextRenderer::TextRenderer(std::string path, int fontWidth, int fontHeight,
-		int windowWidth, int windowHeight) {
-	// Le Shader, avec en uniform la taille de l'écran
+TextRenderer::TextRenderer(std::string path, int fontWidth, int fontHeight, int windowWidth, 
+		int windowHeight) {
+
+	// The shader, with the screen size as uniform
 	if (!_programId) {
-		_programId = LoadShaders("ressources/shaders/text/text.vs",
-				"ressources/shaders/text/text.fs");
+		_programId = LoadShaders("resources/shaders/text/text.vs",
+				"resources/shaders/text/text.fs");
 		setRatio(windowWidth, windowHeight);
 	}
 	FT_Library ft;
 	// All functions return a value different than 0 whenever an error occurred
 	if (FT_Init_FreeType(&ft))
-		std::cout << "ERROR::FREETYPE: Could not init FreeType Library"
-				<< std::endl;
+		ABORT_S() << "FREETYPE: Could not init FreeType Library";
 
 	// load font as face
 	FT_Face face;
 	if (FT_New_Face(ft, path.c_str(), 0, &face))
-		std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+		ABORT_S() << "FREETYPE: Failed to load font";
 
 	// set size to load glyphs as
 	FT_Set_Pixel_Sizes(face, 0, 48);
@@ -48,7 +49,7 @@ TextRenderer::TextRenderer(std::string path, int fontWidth, int fontHeight,
 	for (unsigned char c = 0; c < 128; c++) {
 		// Load character glyph
 		if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
-			std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+			ABORT_S() << "FREETYTPE: Failed to load Glyph";
 			continue;
 		}
 		// generate texture
@@ -127,8 +128,7 @@ void TextRenderer::renderText(std::string text, float x, float y, float scale,
 	y = (float(_windowHeight) -  float(_characters['I'].Bearing.y) * 2.0f * scale) * y
 			+ float(_characters[0].Bearing.y) * scale / 2;
 
-	glUniform3f(glGetUniformLocation(_programId, "textColor"), color.x, color.y,
-			color.z);
+	glUniform3f(glGetUniformLocation(_programId, "textColor"), color.x, color.y, color.z);
 
 	// iterate through all characters
 	std::string::const_iterator c;
@@ -155,13 +155,15 @@ void TextRenderer::renderText(std::string text, float x, float y, float scale,
 		glBindTexture(GL_TEXTURE_2D, ch.TextureID);
 		// update content of VBO memory
 		glBindBuffer(GL_ARRAY_BUFFER, _VBO);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // be sure to use glBufferSubData and not glBufferData
-
+		// be sure to use glBufferSubData and not glBufferData
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); 		
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		// render quad
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		// now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-		x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+		// bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to
+		// get amount of pixels))
+		x += (ch.Advance >> 6) * scale; 	
 	}
 }
 

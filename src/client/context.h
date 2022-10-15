@@ -5,9 +5,14 @@
 #ifndef IVY_CONTEXT_H
 #define IVY_CONTEXT_H
 
-
 namespace context {
     GLFWwindow *init();
+
+    void setFullscreen(bool);
+
+    int getWidth();
+    int getHeight();
+
     void terminate();
 }
 
