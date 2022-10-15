@@ -38,9 +38,8 @@ void EntityChunk::preload() {
     // Read our .obj file
     //std::vector<glm::vec3> vertices;
     //std::vector<glm::vec3> colors;
-    //loadOBJ("ressources/models/example/cube.obj", vertices, uvs, normals);
-    Location loc = getLocation();
-    glm::vec3 chunk_pos = grid::pos_to_chunk(loc);
+    //loadOBJ("resources/models/example/cube.obj", vertices, uvs, normals);
+    //glm::vec3 chunk_pos = grid::pos_to_chunk(getLocation());
     //std::cout << "Meshing chunk at " << int(chunk_pos.x) << "; "
     //          << int(chunk_pos.y) << "; "
     //          << int(chunk_pos.z) << "...\n";
@@ -57,8 +56,8 @@ void EntityChunk::load() {
     if (!program_ID) {
         // The 1st time, create and compile our GLSL program from the shaders
         LOG_S(1) << "Loading shaders...";
-        program_ID = LoadShaders("ressources/shaders/chunkColor/chunkColor.vert",
-                                 "ressources/shaders/chunkColor/chunkColor.frag");
+        program_ID = LoadShaders("resources/shaders/chunkColor/chunkColor.vert",
+                                 "resources/shaders/chunkColor/chunkColor.frag");
 
         // Get a handle for our "MVP" uniform
         matrix_ID = glGetUniformLocation(program_ID, "MVP");

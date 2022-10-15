@@ -1,3 +1,7 @@
+# iVy
+
+![A very random screenshot from a very experimental build](/resources/screenshots/experimental_build_1.png?raw=true)
+
 Bon du coup... On a notre compilation avec CMake
 qui marche. Aucune idée de comment on active l'opti,
 mais bon au moins on produit un executable.

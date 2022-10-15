@@ -47,8 +47,8 @@ void EntityUniformVoxel::load() {
 	if (!programID) {
 		programID =
 				LoadShaders(
-						"ressources/shaders/uniformColor/TransformVertexShader.vertexshader",
-						"ressources/shaders/uniformColor/ColorFragmentShader.fragmentshader");
+						"resources/shaders/uniformColor/TransformVertexShader.vertexshader",
+						"resources/shaders/uniformColor/ColorFragmentShader.fragmentshader");
 
 		// Get a handle for our "MVP" uniform
 		matrixID = glGetUniformLocation(programID, "MVP");
@@ -57,7 +57,7 @@ void EntityUniformVoxel::load() {
 		std::vector<glm::vec3> vertices;
 		std::vector<glm::vec2> uvs;
 		std::vector<glm::vec3> normals; // Won't be used at the moment.
-		loadOBJ("ressources/models/example/cube.obj", vertices, uvs,
+		loadOBJ("resources/models/example/cube.obj", vertices, uvs,
 				normals);
 
 		// Load it into a VBO

@@ -1,5 +1,5 @@
 //
-// Created by silverly on 21/05/2021.
+// Created by silverly on 20/05/2021.
 //
 
 #include <glad/glad.h>
@@ -8,6 +8,7 @@
 
 #include "server.h"
 #include "../common/world/world.h"
+#include "server_networking.h"
 
 #include <atomic>
 #include <thread>
@@ -22,18 +23,18 @@ namespace server{
 			LOG_S(INFO) << "Server started!";
             while (!shutting_down)
             {
-                // World.tick?
-                //
+                world::tick();
             }
             LOG_S(INFO) << "Server shutting down";
+            server_networking::stop();
         }
     }
 
     void start(){
         LOG_S(INFO) << "Server starting...";
 
-		// for now itializing world at server start
 		world::init();
+        server_networking::init();
 
 		shutting_down = false;
         s = std::thread(tick);
@@ -47,5 +48,6 @@ namespace server{
         if(s.joinable()){
             s.join();
         }
+        server_networking::join();
     }
 }
