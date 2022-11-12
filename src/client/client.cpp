@@ -14,7 +14,6 @@
 #include "../common/world/grid.h"
 #include "../common/utils/worker.h"
 #include "../common/utils/safe_queue.h"
-#include "../common/world/entities/entity_chunk.h"
 #include "client_networking.h"
 #include "chunk_loading.h"
 

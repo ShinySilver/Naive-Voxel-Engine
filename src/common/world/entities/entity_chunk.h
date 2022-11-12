@@ -47,6 +47,10 @@ private:
 	int verticeBufferSize = 0;
 
     Chunk _chunk;
+    // TODO: Fill them up during the chunk loading.
+    // TODO: Maybe we could replace the chunk buffer with a linked list using these.
+    // TODO: Merge together Chunks & chunk entities?
+    Chunk *adjacent_chunks[6];
     ChunkUtil::Mesh *_mesh;
 };
 

@@ -9,6 +9,11 @@
 #include "../../client/utils/mesher/chunk_util.h"
 
 namespace grid {
+    /**
+     * TBD
+     * @param v
+     * @return
+     */
     inline glm::vec3 pos_to_chunk(const Location &v) {
         return glm::vec3(int(v.position.x / DEFAULT_CHUNK_SIDE / VOXEL_SIZE),
                          int(v.position.y / DEFAULT_CHUNK_SIDE / VOXEL_SIZE),
