@@ -5,6 +5,7 @@
 #ifndef IVY_CLIENT_NETWORKING_H
 #define IVY_CLIENT_NETWORKING_H
 
+#include <functional>
 #include "../common/world/entities/entity.h"
 
 namespace client_networking {

@@ -11,8 +11,6 @@
 #define VIEW_DISTANCE 8
 #define TICK_DISTANCE 4
 
-// TODO: load_imp dans client
-
 namespace client {
     void tick();
 }

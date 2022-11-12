@@ -12,7 +12,7 @@ file(COPY resources DESTINATION ${dir}/../build)
 
 add_definitions(-DLOGURU_WITH_STREAMS=1)
 file(GLOB_RECURSE SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
-add_executable(iVy ${SRC_FILES} src/client/client_networking.cpp src/client/client_networking.h src/server/server_networking.cpp src/server/server_networking.h)
+add_executable(iVy ${SRC_FILES} src/client/client_networking.cpp src/client/client_networking.h src/server/server_networking.cpp src/server/server_networking.h src/client/chunk_loading.cpp src/client/chunk_loading.h)
 target_link_libraries(iVy glfw pthread dl freetype)
 #target_compile_options(iVy PRIVATE -fsanitize=address)
 #target_link_options(iVy PRIVATE -fsanitize=address)
