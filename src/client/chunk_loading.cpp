@@ -73,7 +73,7 @@ namespace chunk_loading {
                                                                chunk_map[((INT_MAX / 2 + (int) player_pos.x + dx)) %
                                                                          (VIEW_DISTANCE * 2 + 1)][
                                                                        ((INT_MAX / 2 + (int) player_pos.y + dy)) %
-                                                                       (VIEW_DISTANCE * 2 + 1)]
+                                                                       (VIEW_DISTANCE * 2 + 1)] // TODO: Add mutex
                                                                [((INT_MAX / 2 + (int) player_pos.z + dz)) %
                                                                 (VIEW_DISTANCE * 2 + 1)] = new_chunk;
                                                                preloading_queue.enqueue(new_chunk);

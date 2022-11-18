@@ -93,7 +93,7 @@ namespace client {
         /**
          * Initializing chunk loading around the camera
          */
-         chunk_loading::init();
+        chunk_loading::init();
 
         /**
          * Starting workers
@@ -101,7 +101,7 @@ namespace client {
         LOG_S(1) << "Client starting its worker threads....";
         workers = std::vector<Worker *>();
         workers.emplace_back(new Worker("main_client_worker", chunk_loading::main_worker_tick));
-        for (int i = 0; i < 2; ++i) {
+        for (int i = 0; i < CLIENT_SECONDARY_WORKER_THREAD_NUMBER; ++i) {
             std::stringstream name;
             name << "client_worker_" << i + 1;
             workers.emplace_back(new Worker(name.str(), chunk_loading::worker_tick));
@@ -115,6 +115,11 @@ namespace client {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
         /**
+         * Stats
+         */
+        int chunk_unloaded_this_tick = 0, chunk_loaded_this_tick = 0, chunk_loaded = 0;
+
+        /**
          * Render loop!
          */
         LOG_S(1) << "Client ticking!";
@@ -123,42 +128,49 @@ namespace client {
             /**
              * Adding/removing entities waiting in the queues to the scene
              */
-            {
-                Entity *tmp;
-                while (!chunk_loading::unloading_queue.empty()) {
-                    tmp = chunk_loading::unloading_queue.dequeue();
-                    tmp->unload();
-                    auto it = std::find(loaded_entities.begin(), loaded_entities.end(), tmp);
-                    if (it != loaded_entities.end()) { loaded_entities.erase(it); }
+            Entity *tmp;
+            chunk_unloaded_this_tick = 0;
+            while (!chunk_loading::unloading_queue.empty()) {
+                chunk_loaded--;
+                chunk_unloaded_this_tick++;
+                tmp = chunk_loading::unloading_queue.dequeue();
+                tmp->unload();
+                auto it = std::find(loaded_entities.begin(), loaded_entities.end(), tmp);
+                if (it != loaded_entities.end()) { loaded_entities.erase(it); }
 
-                    glm::vec3 chunk_pos = grid::pos_to_chunk(tmp->getLocation());
-                    DLOG_S(4) << "Unloading chunk at chunk pos "
-                              << chunk_pos.x << ";"
-                              << chunk_pos.y << ";"
-                              << chunk_pos.z << " and pos "
-                              << tmp->getLocation().position.x << ";"
-                              << tmp->getLocation().position.y << ";"
-                              << tmp->getLocation().position.z << "";
+                glm::vec3 chunk_pos = grid::pos_to_chunk(tmp->getLocation());
+                DLOG_S(4) << "Unloading chunk at chunk pos "
+                          << chunk_pos.x << ";"
+                          << chunk_pos.y << ";"
+                          << chunk_pos.z << " and pos "
+                          << tmp->getLocation().position.x << ";"
+                          << tmp->getLocation().position.y << ";"
+                          << tmp->getLocation().position.z << "";
 
-                    world::unload_cell(tmp);
-                    tmp->~Entity();
-                    free(tmp); // TODO: think about chunk serialization.
-                }
-                while (!chunk_loading::loading_queue.empty()) {
-                    tmp = chunk_loading::loading_queue.dequeue();
-                    tmp->load();
-                    loaded_entities.emplace_back(tmp);
-
-                    glm::vec3 chunk_pos = grid::pos_to_chunk(tmp->getLocation());
-                    DLOG_S(4) << "Loading chunk at chunk pos "
-                              << chunk_pos.x << ";"
-                              << chunk_pos.y << ";"
-                              << chunk_pos.z << " and pos "
-                              << tmp->getLocation().position.x << ";"
-                              << tmp->getLocation().position.y << ";"
-                              << tmp->getLocation().position.z << "";
-                }
+                world::unload_cell(tmp);
+                tmp->~Entity();
+                free(tmp); // TODO: think about chunk serialization.
             }
+
+            chunk_loaded_this_tick = 0;
+            while (!chunk_loading::loading_queue.empty()) {
+                chunk_loaded++;
+                chunk_loaded_this_tick++;
+                tmp = chunk_loading::loading_queue.dequeue();
+                tmp->load();
+                loaded_entities.emplace_back(tmp);
+
+                glm::vec3 chunk_pos = grid::pos_to_chunk(tmp->getLocation());
+                DLOG_S(4) << "Loading chunk at chunk pos "
+                          << chunk_pos.x << ";"
+                          << chunk_pos.y << ";"
+                          << chunk_pos.z << " and pos "
+                          << tmp->getLocation().position.x << ";"
+                          << tmp->getLocation().position.y << ";"
+                          << tmp->getLocation().position.z << "";
+            }
+            std::cout << "unloaded: " << chunk_unloaded_this_tick << ", loaded: " << chunk_loaded_this_tick
+                      << ", total: " << chunk_loaded << "\n";
 
             /**
              * Handling camera and inputs

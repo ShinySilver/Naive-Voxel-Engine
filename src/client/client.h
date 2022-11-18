@@ -10,6 +10,7 @@
 
 #define VIEW_DISTANCE 8
 #define TICK_DISTANCE 4
+#define CLIENT_SECONDARY_WORKER_THREAD_NUMBER 6
 
 namespace client {
     void tick();

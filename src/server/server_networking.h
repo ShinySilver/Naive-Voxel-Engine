@@ -2,11 +2,14 @@
 // Created by silver on 11/10/22.
 //
 
-#ifndef IVY_CLIENT_NETWORKING_H
-#define IVY_CLIENT_NETWORKING_H
+#ifndef IVY_SERVER_NETWORKING_H
+#define IVY_SERVER_NETWORKING_H
 
 
+#include <functional>
 #include "../common/world/entities/entity.h"
+
+#define GENERATION_WORKER_COUNT 6
 
 namespace server_networking {
     /**
@@ -33,8 +36,9 @@ namespace server_networking {
     /**
      * Apply for some world generation
      */
-    void queue_chunk_generation_request(const glm::vec3 &cell_coordinate, Entity *entity);
+    void queue_chunk_generation_request(const glm::vec3 cell_coordinate, Entity *entity,
+                                        std::function<void(Entity *cell)> callback);
 };
 
 
-#endif //IVY_CLIENT_NETWORKING_H
+#endif //IVY_SERVER_NETWORKING_H

@@ -47,7 +47,6 @@ void EntityChunk::preload() {
 }
 
 void EntityChunk::load() {
-    //std::cout << "Loading Chunk.\n";
 
     // Our VAO
     glGenVertexArrays(1, &vertexArrayID);

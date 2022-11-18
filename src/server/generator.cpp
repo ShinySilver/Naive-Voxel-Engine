@@ -7,7 +7,7 @@
 #include "generator.h"
 #include "../common/world/entities/entity_chunk.h"
 
-#define CHUNK_SIDE 16
+#define CHUNK_SIDE DEFAULT_CHUNK_SIDE
 #define VOXEL_STONE Color(0.53, 0.55, 0.55)
 #define VOXEL_DIRT Color(0.6, 0.46, 0.32)
 #define VOXEL_GRASS Color(0.1, 0.6, 0.1)

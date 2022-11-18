@@ -5,7 +5,7 @@
 #ifndef IVY_CHUNK_H
 #define IVY_CHUNK_H
 
-#define DEFAULT_CHUNK_SIDE 16
+#define DEFAULT_CHUNK_SIDE 48
 
 #include <complex>
 #include <glm/glm/vec3.hpp>
@@ -69,6 +69,10 @@ public:
 
     inline Voxel &get(int x, int y, int z) {
         return data[x + size * y + size * size * z];
+    }
+
+    inline bool is_empty(){
+        return data.empty();
     }
 
 private:

@@ -26,7 +26,7 @@ namespace client_networking {
      * @param entity
      * @param callback
      */
-    void load_cell_async(const glm::vec3 &cell_coordinate, Entity *entity, std::function<void(Entity *cell)> callback);
+    void load_cell_async(const glm::vec3 cell_coordinate, Entity *entity, std::function<void(Entity *cell)> callback);
 };
 
 

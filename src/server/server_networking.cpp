@@ -8,15 +8,15 @@
 #include "../common/utils/worker.h"
 #include "../common/world/world.h"
 
-#define GENERATION_WORKER_COUNT 8
-
 namespace server_networking {
     namespace {
         struct ChunkGenRequest {
-            const glm::vec3 &cell_coordinate;
+            const glm::vec3 cell_coordinate;
             Entity *entity;
-            ChunkGenRequest(const glm::vec3 &cell_coordinate, Entity *entity) : entity(entity),
-                                                                                cell_coordinate(cell_coordinate) {}
+            std::function<void(Entity *cell)> callback;
+            ChunkGenRequest(glm::vec3 cell_coordinate, Entity *entity,
+                            std::function<void(Entity *cell)> callback) : entity(entity),
+                            cell_coordinate(cell_coordinate), callback(callback) {}
         };
 
         std::vector<Worker *> workers;
@@ -26,6 +26,7 @@ namespace server_networking {
             ChunkGenRequest *e = generation_queue.dequeue();
             if (e) {
                 world::load_cell(e->cell_coordinate, e->entity);
+                e->callback(e->entity);
             }
         }
     }
@@ -58,8 +59,9 @@ namespace server_networking {
 
     }
 
-    void queue_chunk_generation_request(const glm::vec3 &cell_coordinate, Entity *entity) {
-        generation_queue.enqueue(new ChunkGenRequest(cell_coordinate, entity));
+    void queue_chunk_generation_request(const glm::vec3 cell_coordinate, Entity *entity,
+                                        std::function<void(Entity *cell)> callback) {
+        generation_queue.enqueue(new ChunkGenRequest(cell_coordinate, entity, callback)); // TODO: check C++11 for move
     }
 
 }

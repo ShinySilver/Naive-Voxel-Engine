@@ -14,8 +14,8 @@
 #include "../../../common/world/chunk.h"
 
 #define VOXEL_SIZE (2.0f)
-#define CHUNK_WIDTH  (16)
-#define CHUNK_HEIGHT (16)
+#define CHUNK_WIDTH  DEFAULT_CHUNK_SIDE
+#define CHUNK_HEIGHT DEFAULT_CHUNK_SIDE
 
 /*
  *
