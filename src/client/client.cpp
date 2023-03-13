@@ -10,19 +10,22 @@
 
 #include "context.h"
 #include "camera.h"
-#include "../common/world/world.h"
-#include "../common/world/grid.h"
+#include "../server/world.h"
 #include "../common/utils/worker.h"
 #include "../common/utils/safe_queue.h"
 #include "client_networking.h"
 #include "chunk_loading.h"
+#include "utils/colors.h"
+#include "utils/shader/text_renderer.h"
 
 #include <sstream>
 
 namespace client {
     namespace {
         float win_fov = 45.0f, win_ratio = (float) (16.0 / 9.0), z_far = 1e10f;
-        bool debug_mode = false, wire_mode = false, is_fullscreen = false;
+        bool debug_mode = false, wire_mode = false, is_fullscreen = false, info_mode = false;
+
+        TextRenderer *font;
 
         glm::mat4 _projectionMatrix = glm::perspective(win_fov, win_ratio, 0.1f, z_far);
         glm::mat4 _viewMatrix, _matrix;
@@ -43,6 +46,14 @@ namespace client {
                         } else {
                             LOG_S(INFO) << "Enabling OpenGL culling";
                             glEnable(GL_CULL_FACE);
+                        }
+                        break;
+                    case GLFW_KEY_F3:
+                        info_mode = !info_mode;
+                        if (info_mode) {
+                            LOG_S(INFO) << "Enabling F3 screen";
+                        } else {
+                            LOG_S(INFO) << "Disabling F3 screen";
                         }
                         break;
                     case GLFW_KEY_F11:
@@ -75,7 +86,7 @@ namespace client {
             glViewport(0, 0, width, height);
             win_ratio = float(width) / float(height);
             _projectionMatrix = glm::perspective(win_fov, win_ratio, 0.1f, z_far);
-            //_textRenderer->setRatio(width, height);
+            font->setRatio(width, height);
         }
 
         std::vector<Worker *> workers;
@@ -84,11 +95,20 @@ namespace client {
 
     void tick() {
 
+        LOG_S(INFO) << "Client starting!";
+
         /**
          * Creating context
          */
         GLFWwindow *window = nullptr;
         if (!(window = context::init())) ABORT_S() << "Could not init context!";
+
+        /**
+         * Some ugly hacks for the text renderer
+         */
+        TextRenderer debug_font = TextRenderer("resources/fonts/arial.ttf", 1,
+                       1, WIN_WIDTH, WIN_HEIGHT);
+        font = &debug_font;
 
         /**
          * Initializing chunk loading around the camera
@@ -126,7 +146,7 @@ namespace client {
         while (!glfwWindowShouldClose(window)) {
 
             /**
-             * Adding/removing entities waiting in the queues to the scene
+             * Adding to the scene entities waiting in the loading queue
              */
             Entity *tmp;
             chunk_unloaded_this_tick = 0;
@@ -138,7 +158,7 @@ namespace client {
                 auto it = std::find(loaded_entities.begin(), loaded_entities.end(), tmp);
                 if (it != loaded_entities.end()) { loaded_entities.erase(it); }
 
-                glm::vec3 chunk_pos = grid::pos_to_chunk(tmp->getLocation());
+                glm::vec3 chunk_pos = location_to_chunk_pos(tmp->getLocation());
                 DLOG_S(4) << "Unloading chunk at chunk pos "
                           << chunk_pos.x << ";"
                           << chunk_pos.y << ";"
@@ -152,6 +172,9 @@ namespace client {
                 free(tmp); // TODO: think about chunk serialization.
             }
 
+            /**
+             * Removing the entities waiting in the unloading queue
+             */
             chunk_loaded_this_tick = 0;
             while (!chunk_loading::loading_queue.empty()) {
                 chunk_loaded++;
@@ -160,7 +183,7 @@ namespace client {
                 tmp->load();
                 loaded_entities.emplace_back(tmp);
 
-                glm::vec3 chunk_pos = grid::pos_to_chunk(tmp->getLocation());
+                glm::vec3 chunk_pos = location_to_chunk_pos(tmp->getLocation());
                 DLOG_S(4) << "Loading chunk at chunk pos "
                           << chunk_pos.x << ";"
                           << chunk_pos.y << ";"
@@ -169,8 +192,6 @@ namespace client {
                           << tmp->getLocation().position.y << ";"
                           << tmp->getLocation().position.z << "";
             }
-            std::cout << "unloaded: " << chunk_unloaded_this_tick << ", loaded: " << chunk_loaded_this_tick
-                      << ", total: " << chunk_loaded << "\n";
 
             /**
              * Handling camera and inputs
@@ -181,17 +202,50 @@ namespace client {
             glfwPollEvents();
 
             /**
-             * Rendering
+             * Rendering entities
              */
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             for (auto const entity: loaded_entities) {
                 entity->lock();
                 entity->fastUpdate();
-                //entity->draw(_matrix);
-                //TODO temporary light pos
                 entity->draw(_matrix, glm::vec3(100.0, 100.0, 100.0), camera::get_location().position);
                 entity->unlock();
             }
+
+            /**
+             * If enabled by pressing F3, we are showing some debug info
+             * TODO: replace this interface with one made with a nice library, and unlock the mouse with left alt.
+             */
+            if(info_mode){
+                debug_font.bind();
+                debug_font.renderText("iVy dev build ", 0.0125, 0.98, 0.4, colors::WHITE);
+                debug_font.renderText(__DATE__ ", " __TIME__, 0.0125, 0.95, 0.4, colors::WHITE);
+
+                Location l = camera::get_location();
+                std::stringstream ss;
+                ss << "X=" << std::fixed << std::setprecision(3) << l.position.x;
+                ss << " Y=" << std::fixed << std::setprecision(3) << l.position.y;
+                ss << " Z=" << std::fixed << std::setprecision(3) << l.position.z;
+                debug_font.renderText(ss.str(),0.0125, 0.91, 0.4, colors::WHITE);
+
+                ss = std::stringstream();
+                ss << "RX=" << std::fixed << std::setprecision(3) << l.rotation.x;
+                ss << " RY=" << std::fixed << std::setprecision(3) << l.rotation.y;
+                ss << " RZ=" << std::fixed << std::setprecision(3) << l.rotation.z;
+                debug_font.renderText(ss.str(),0.0125, 0.88, 0.4, colors::WHITE);
+
+                debug_font.renderText("chunks_loaded="+std::to_string(chunk_loaded),
+                                      0.0125, 0.84, 0.4, colors::WHITE);
+                debug_font.renderText("chunks_loaded_this_tick="+std::to_string(chunk_loaded_this_tick),
+                                      0.0125, 0.81, 0.4, colors::WHITE);
+                debug_font.renderText("chunks_unloaded_this_tick="+std::to_string(chunk_unloaded_this_tick),
+                                      0.0125, 0.78, 0.4, colors::WHITE);
+                debug_font.unbind();
+            }
+
+            /**
+             * Swapping buffers!
+             */
             glfwSwapBuffers(window);
         }
 

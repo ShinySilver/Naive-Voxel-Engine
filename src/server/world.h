@@ -7,8 +7,7 @@
 
 #include <bits/stdc++.h>
 #include <vector>
-
-#include "entities/entity.h"
+#include "../common/entities/entity.h"
 
 namespace world {
 
@@ -46,7 +45,8 @@ namespace world {
      * @param entity
      * @param callback
      */
-    void load_cell_with_callback(const glm::vec3 &cell_coordinate, Entity *entity, std::function<void(Entity *cell)> callback);
+    void load_cell_with_callback(const glm::vec3 &cell_coordinate, Entity *entity,
+                                 std::function<void(Entity *cell)> callback);
 }
 
 #endif //IVY_WORLD_H

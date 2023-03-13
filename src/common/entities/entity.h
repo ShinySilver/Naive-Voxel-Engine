@@ -9,9 +9,9 @@
 #define WORLD_ENTITY_IENTITY_H_
 
 #include <mutex>
-#include <glm/glm/vec3.hpp>
-#include <glm/glm/ext/matrix_float4x4.hpp>
-#include "../../utils/location.h"
+#include "glm/glm/vec3.hpp"
+#include "glm/glm/ext/matrix_float4x4.hpp"
+#include "../utils/positioning.h"
 
 #define FIXED_TICK_TIME (1/20.0f)
 #define FIXED_RENDER_TIME (1/60.0f)
@@ -38,27 +38,28 @@ public:
 	void unlock();
 
 	/**
-	 * Called by the world thread 20 time per sec. To be overriden for sentient entities.
+	 * Called by the world thread 20 time per sec. To override for sentient entities.
 	 */
 	virtual void fixedUpdate();
+
+    /**
+     * Called before every frame. Movement, position interpolation, some animations & stuff like that can be done here.
+     */
 	virtual void fastUpdate();
 
 	/**
-	 * Location is updated every fixed update, and extrapolated using speed during render. No
-	 * teleportation from outside.
+	 * Location is updated every fixed update, and extrapolated using speed during either render or fastUpdate (idk). No
+	 * teleportation from the outside.
 	 */
 	const Location& getLocation() const;
-
 	const glm::vec3& getPosition() const;
 	const glm::vec3& getRotation() const;
-
 	const glm::vec3& getSpeed() const;
 	void setSpeed(glm::vec3 &speed);
-
 	const glm::vec3& getRotationSpeed() const;
 	void setRotationSpeed(glm::vec3 &rotationSpeed);
 
-	// TODO: Add container/chunk system + local pos/global pos
+	// TODO: Add container/chunk system + local pos/global pos so that every entity stay in a given referential
 
     bool is_loaded();
 

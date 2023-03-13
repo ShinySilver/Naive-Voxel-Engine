@@ -5,12 +5,12 @@
  *      Author: silverly
  */
 
-#ifndef WORLD_ENTITY_ENTITYCAMERA_H_
-#define WORLD_ENTITY_ENTITYCAMERA_H_
+#ifndef IVY_CAMERA_H_
+#define IVY_CAMERA_H_
 
 #include <GLFW/glfw3.h>
 #include <glm/glm/ext/matrix_float4x4.hpp>
-#include "../common/utils/location.h"
+#include "../common/utils/positioning.h"
 
 namespace camera {
     void updateControlling(GLFWwindow *);
@@ -18,8 +18,6 @@ namespace camera {
     void updateView(GLFWwindow *, glm::mat4 &, glm::mat4 &);
 
     Location get_location();
-
-    void fixedUpdate();
 };
 
-#endif /* WORLD_ENTITY_ENTITYCAMERA_H_ */
+#endif /* IVY_CAMERA_H_ */

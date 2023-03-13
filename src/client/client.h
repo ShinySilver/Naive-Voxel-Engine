@@ -5,8 +5,6 @@
 #ifndef IVY_CLIENT_H
 #define IVY_CLIENT_H
 
-#include "../common/world/entities/entity.h"
-
 
 #define VIEW_DISTANCE 8
 #define TICK_DISTANCE 4

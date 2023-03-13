@@ -7,6 +7,7 @@
 
 
 #include "../common/utils/safe_queue.h"
+#include "../common/entities/entity.h"
 
 namespace chunk_loading {
     /**

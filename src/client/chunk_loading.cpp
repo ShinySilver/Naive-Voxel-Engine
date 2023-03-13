@@ -4,17 +4,14 @@
 
 #include "client_networking.h"
 #include "chunk_loading.h"
-#include "client.h"
-#include "camera.h"
-#include "../common/utils/safe_queue.h"
-#include "../common/world/entities/entity_chunk.h"
-#include "../common/world/grid.h"
 #include "loguru.hpp"
+#include "camera.h"
+#include "client.h"
+#include "chunk_cache.h"
 
 namespace chunk_loading {
-    namespace {
-        Entity *chunk_map[VIEW_DISTANCE * 2 + 1][VIEW_DISTANCE * 2 + 1][VIEW_DISTANCE * 2 + 1];
-    }
+
+    using chunk_cache::ChunkCacheEntry;
 
     SafeQueue<Entity *> preloading_queue;
     SafeQueue<Entity *> loading_queue;
@@ -22,73 +19,60 @@ namespace chunk_loading {
 
     void init() {
         /**
-         * Initializing chunk map
+         * Initializing the chunk map
          */
-        glm::vec3 player_pos = grid::pos_to_chunk(camera::get_location());
-        Entity *e;
-        for (int dx = -VIEW_DISTANCE; dx <= VIEW_DISTANCE; dx++) {
-            for (int dy = -VIEW_DISTANCE; dy <= VIEW_DISTANCE; dy++) {
-                for (int dz = -VIEW_DISTANCE; dz <= VIEW_DISTANCE; dz++) {
-                    e = (Entity *) malloc(sizeof(EntityChunk));
-                    client_networking::load_cell_async(player_pos + glm::vec3(dx, dy, dz), e,
-                                                       [player_pos, dx, dy, dz](Entity *new_chunk) {
-                                                           chunk_map[((INT_MAX / 2 + (int) player_pos.x + dx)) %
-                                                                     (VIEW_DISTANCE * 2 + 1)][
-                                                                   ((INT_MAX / 2 + (int) player_pos.y + dy)) %
-                                                                   (VIEW_DISTANCE * 2 + 1)]
-                                                           [((INT_MAX / 2 + (int) player_pos.z + dz)) %
-                                                            (VIEW_DISTANCE * 2 + 1)] = new_chunk;
-                                                           preloading_queue.enqueue(new_chunk);
-                                                       });
-                }
-            }
-        }
     }
 
     void main_worker_tick() {
-        glm::vec3 player_pos = grid::pos_to_chunk(camera::get_location());
-        Entity *e;
-        for (int dx = -VIEW_DISTANCE; dx <= VIEW_DISTANCE; dx++) {
-            for (int dy = -VIEW_DISTANCE; dy <= VIEW_DISTANCE; dy++) {
-                for (int dz = -VIEW_DISTANCE; dz <= VIEW_DISTANCE; dz++) {
-                    // We get the chunk in the cache corresponding to the given chunk pos
-                    e = chunk_map[((INT_MAX / 2 + (int) player_pos.x + dx)) % (VIEW_DISTANCE * 2 + 1)][
-                            ((INT_MAX / 2 + (int) player_pos.y + dy)) % (VIEW_DISTANCE * 2 + 1)]
-                    [((INT_MAX / 2 + (int) player_pos.z + dz)) % (VIEW_DISTANCE * 2 + 1)];
+        static ChunkPos last_pos = location_to_chunk_pos(camera::get_location());
+        ChunkPos new_pos = location_to_chunk_pos(camera::get_location());
 
-                    // Skipping loading chunks - we are waiting for them to load before unloading 'em
-                    if (e == 0 || !e->is_loaded())
-                        continue;
+        if (last_pos == new_pos) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            return;
+        }
 
+        glm::vec3 delta = new_pos - last_pos;
+        glm::vec3 delta_sign = glm::sign(delta);
 
-                    // If the chunk is out of view distance, mark it for unload & replace it with a new one
-                    if (grid::pos_to_chunk(e->getLocation()) != player_pos + glm::vec3(dx, dy, dz)) {
-                        unloading_queue.enqueue(e);
-                        chunk_map[((INT_MAX / 2 + (int) player_pos.x + dx)) % (VIEW_DISTANCE * 2 + 1)][
-                                ((INT_MAX / 2 + (int) player_pos.y + dy)) % (VIEW_DISTANCE * 2 + 1)]
-                        [((INT_MAX / 2 + (int) player_pos.z + dz)) % (VIEW_DISTANCE * 2 + 1)] = 0;
-                        Entity *new_chunk = (Entity *) malloc(sizeof(EntityChunk));
-                        client_networking::load_cell_async(player_pos + glm::vec3(dx, dy, dz), new_chunk,
-                                                           [player_pos, dx, dy, dz](Entity *new_chunk) {
-                                                               chunk_map[((INT_MAX / 2 + (int) player_pos.x + dx)) %
-                                                                         (VIEW_DISTANCE * 2 + 1)][
-                                                                       ((INT_MAX / 2 + (int) player_pos.y + dy)) %
-                                                                       (VIEW_DISTANCE * 2 + 1)] // TODO: Add mutex
-                                                               [((INT_MAX / 2 + (int) player_pos.z + dz)) %
-                                                                (VIEW_DISTANCE * 2 + 1)] = new_chunk;
-                                                               preloading_queue.enqueue(new_chunk);
-                                                           });
-                    }
+        ChunkCacheEntry entry;
+        for (int dx = 0; dx < CACHE_WIDTH; ++dx) {
+            for (int dy = 0; dy < CACHE_WIDTH; ++dy) {
+                for (int dz = 0; dz < CACHE_WIDTH; ++dz) {
+                    ChunkPos p = {new_pos.x + dx, new_pos.y + dy, new_pos.z + dz};
+                    entry = chunk_cache::get_cache_entry(p);
+
+                    // Checking whether the chunk is misplaced.
+                    if (entry.position == p || (entry.entity && !((Entity *) entry.entity)->is_loaded())) continue;
+
+                    // TODO what if we are meshing a neighbour and the chunk disappear? NPE?
+                    // When we start meshing, for each nearby chunk we try to lock it. If we fail, we silently stop the
+                    // meshing. In the main func, we try to lock every chunk in the unload func. if we fail, we add the
+                    // chunk back to the unloading queue. In order to avoid deadlocks, we now limit the amount of chunk
+                    // load/unload per render tick, and at most we unload N chunks, N being the queue size at the start
+                    // of the unloading loop.
+
+                    // Now that we know that it is misplaced, if applicable enqueue the entity for unloading.
+                    if (entry.entity != nullptr) unloading_queue.enqueue((Entity *) entry.entity);
+
+                    // Now that it's done, let's update the entry with a new position, so we don't regen the chunk again
+                    entry.position = p;
+
+                    // At last, we add it to the world gen queue without creating an entity yet - it might be air!
+                    entry.is_awaiting_voxels = true; // Makes the difference between a chunk with air & a pending one
+                    client_networking::fill_chunk_cache_entry(&entry); // TODO implement it
                 }
             }
         }
+
+        last_pos = new_pos;
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
     void worker_tick() {
         Entity *e = preloading_queue.dequeue();
         if (e) {
-            glm::vec3 chunk_pos = grid::pos_to_chunk(e->getLocation());
+            ChunkPos chunk_pos = location_to_chunk_pos(e->getLocation());
             DLOG_S(4) << "Preloading chunk at chunk pos "
                       << chunk_pos.x << ";"
                       << chunk_pos.y << ";"

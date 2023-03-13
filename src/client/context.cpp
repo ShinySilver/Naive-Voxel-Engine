@@ -8,11 +8,6 @@
 
 #include "context.h"
 
-#define WIN_WIDTH 1280
-#define WIN_HEIGHT 720
-#define WIN_DEFAULT_FRAMERATE 60
-#define WIN_STICKY 0
-
 namespace context {
     namespace {
         int win_width, prev_win_width = WIN_WIDTH, win_height, prev_win_height = WIN_HEIGHT, win_x, win_y;

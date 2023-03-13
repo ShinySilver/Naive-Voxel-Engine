@@ -7,7 +7,7 @@
 
 
 #include <functional>
-#include "../common/world/entities/entity.h"
+#include "../common/entities/entity.h"
 
 #define GENERATION_WORKER_COUNT 6
 
@@ -36,8 +36,8 @@ namespace server_networking {
     /**
      * Apply for some world generation
      */
-    void queue_chunk_generation_request(const glm::vec3 cell_coordinate, Entity *entity,
-                                        std::function<void(Entity *cell)> callback);
+    void queue_chunk_generation_request(const glm::vec3 cell_coordinate,
+                                        std::function<void(Chunk *cell)> callback);
 };
 
 
