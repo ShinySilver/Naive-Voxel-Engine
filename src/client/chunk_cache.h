@@ -21,6 +21,9 @@ namespace chunk_cache {
         // Content of this cache cell
         EntityChunk *entity = 0;
 
+        // Plain chunk data
+        Chunk *chunk_data = 0;
+
         // Flags
         bool is_air = false;
         bool is_awaiting_voxels = false;
@@ -40,8 +43,8 @@ namespace chunk_cache {
                                     CACHE_WIDTH * (((unsigned int) pos.z) % CACHE_WIDTH))].entity;
     }
 
-    inline ChunkCacheEntry &get_cache_entry(const ChunkPos &pos) {
-        return cache[((unsigned int) pos.x) % CACHE_WIDTH +
+    inline ChunkCacheEntry *get_cache_entry(const ChunkPos &pos) {
+        return &cache[((unsigned int) pos.x) % CACHE_WIDTH +
                       CACHE_WIDTH * (((unsigned int) pos.y) % CACHE_WIDTH +
                                      CACHE_WIDTH * (((unsigned int) pos.z) % CACHE_WIDTH))];
     }

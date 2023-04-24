@@ -13,7 +13,7 @@
 
 Entity::Entity() :
         _location{}, _extraPosition{_location.position}, _extraRotation{
-        _location.rotationSpeed}, _is_loaded{false} {
+        _location.rotationSpeed}, _is_loaded{false}, _use_count{0}, _marked_for_deletion{false} {
 }
 
 Entity::Entity(Location l) :

@@ -146,18 +146,25 @@ namespace client {
         while (!glfwWindowShouldClose(window)) {
 
             /**
-             * Adding to the scene entities waiting in the loading queue
+             * Removing the entities waiting in the unloading queue
              */
             Entity *tmp;
             chunk_unloaded_this_tick = 0;
             while (!chunk_loading::unloading_queue.empty()) {
+                // Updating statistics
                 chunk_loaded--;
                 chunk_unloaded_this_tick++;
+
+                // Unloading chunks
                 tmp = chunk_loading::unloading_queue.dequeue();
                 tmp->unload();
+                world::unload_cell(tmp); // Does nothing atm
+
+                // Keeping the entity list up to date. We might want to use a linked hashmap later on.
                 auto it = std::find(loaded_entities.begin(), loaded_entities.end(), tmp);
                 if (it != loaded_entities.end()) { loaded_entities.erase(it); }
 
+                // Some logging
                 glm::vec3 chunk_pos = location_to_chunk_pos(tmp->getLocation());
                 DLOG_S(4) << "Unloading chunk at chunk pos "
                           << chunk_pos.x << ";"
@@ -167,13 +174,12 @@ namespace client {
                           << tmp->getLocation().position.y << ";"
                           << tmp->getLocation().position.z << "";
 
-                world::unload_cell(tmp);
-                tmp->~Entity();
-                free(tmp); // TODO: think about chunk serialization.
+                // Actually freeing the chunk
+                delete(tmp); // TODO: think about chunk serialization.
             }
 
             /**
-             * Removing the entities waiting in the unloading queue
+             * Adding to the scene entities waiting in the loading queue
              */
             chunk_loaded_this_tick = 0;
             while (!chunk_loading::loading_queue.empty()) {

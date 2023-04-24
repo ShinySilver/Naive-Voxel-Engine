@@ -6,13 +6,14 @@
 #include "client_networking.h"
 #include "../server/world.h"
 #include "../server/server_networking.h"
+#include "chunk_loading.h"
 
 namespace client_networking {
-    namespace{
+    namespace {
 
     }
 
-    void init(){
+    void init() {
 
     }
 
@@ -35,6 +36,17 @@ namespace client_networking {
         // eventually add one or multiple of 'em to the meshing queue. In a singleplayer implementation, updating the
         // neighbours is done by the server worker threads, but the meshing will be done by the client workers 'preload'
         // TODO: Implementation! I guess it would be the same as load_cell async, but with support for null return
-        server_networking::queue_chunk_generation_request(cache_entry->position, [](Chunk *new_chunk) {});
+        cache_entry->is_awaiting_voxels = true;
+        server_networking::queue_chunk_generation_request(cache_entry->position, [cache_entry](Chunk *new_chunk) {
+            if (new_chunk != nullptr) {
+                cache_entry->is_air = false;
+                cache_entry->chunk_data = new_chunk;
+                cache_entry->is_awaiting_voxels = false;
+                chunk_loading::preloading_queue.enqueue(cache_entry);
+            }else{
+                cache_entry->is_air = true;
+                cache_entry->is_awaiting_voxels = false;
+            }
+        });
     }
 }

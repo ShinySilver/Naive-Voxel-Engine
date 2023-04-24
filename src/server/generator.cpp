@@ -12,6 +12,7 @@
 #define VOXEL_STONE Voxel(0.53, 0.55, 0.55)
 #define VOXEL_DIRT Voxel(0.6, 0.46, 0.32)
 #define VOXEL_GRASS Voxel(0.1, 0.6, 0.1)
+#define VOXEL_AIR Voxel(0.0, 0.0, 0.0)
 #define UNDER_CULLING_RATE 2
 
 namespace generator {
@@ -30,17 +31,15 @@ namespace generator {
     }
 
 
-    void generate(const glm::vec3 &cell_coordinate, Chunk *chunk) {
+    Chunk *generate(const glm::vec3 &cell_coordinate) {
         // Converting chunk pos to block pos.
         glm::vec<3, int, glm::defaultp> position = cell_coordinate
                                                    * float(CHUNK_SIZE * VOXEL_SIZE);
 
-        // This chunk's voxel grid
-
-
         // Checking if this is an empty chunk. If yes, go fast and skip it
         if (is_empty(cell_coordinate * (float) CHUNK_SIZE)) {
-            chunk->data = (Voxel *) malloc(sizeof(Voxel) * CHUNK_SIZE_CUBED);
+            Voxel *data = (Voxel *) malloc(sizeof(Voxel) * CHUNK_SIZE_CUBED);
+            Chunk *chunk = new Chunk(data);
             for (int dx = 0; dx < CHUNK_SIZE; ++dx) {
                 for (int dz = 0; dz < CHUNK_SIZE; ++dz) {
                     int h = height(cell_coordinate.x * CHUNK_SIZE + dx, cell_coordinate.z * CHUNK_SIZE + dz);
@@ -52,11 +51,13 @@ namespace generator {
                         } else if (cell_coordinate.y * CHUNK_SIZE + dy <= h) {
                             chunk->set(dx, dy, dz, VOXEL_GRASS);
                         } else {
-                            //voxels[dx + dy * CHUNK_SIDE + dz * CHUNK_SIDE * CHUNK_SIDE] = VOXEL_AIR;
+                            chunk->set(dx, dy, dz, VOXEL_AIR);
                         }
                     }
                 }
             }
+            return chunk;
         }
+        return nullptr;
     }
 }

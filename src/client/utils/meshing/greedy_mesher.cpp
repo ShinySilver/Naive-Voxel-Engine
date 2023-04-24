@@ -120,281 +120,237 @@ namespace GreedyMesher {
             for (int i = 0; i < 3; ++i) {
                 mesh->normals.emplace_back(normal2);
             }
-
-            /*
-             mesh.setBuffer(Type.Position, 3, BufferUtils.createFloatBuffer(vertices));
-             mesh.setBuffer(Type.Color, 4, colorArray);
-             mesh.setBuffer(Type.Index, 3, BufferUtils.createIntBuffer(indexes));
-             mesh.updateBound();
-        =======
-                    std::vector<int> indexes;
-                    if (backFace) {
-                        indexes = {2, 0, 1, 1, 3, 2};
-                    } else {
-                        indexes = {2, 3, 1, 1, 0, 2};
-                    }
-
-                    for (int i : indexes) {
-                        mesh->vertices.emplace_back(vertices[i]);
-                        mesh->colors.emplace_back(color);
-                    }
-                    /*
-                     mesh.setBuffer(Type.Position, 3, BufferUtils.createFloatBuffer(vertices));
-                     mesh.setBuffer(Type.Color, 4, colorArray);
-                     mesh.setBuffer(Type.Index, 3, BufferUtils.createIntBuffer(indexes));
-                     mesh.updateBound();
-        >>>>>>> ShinySilver
-
-                     Geometry geo = new Geometry("ColoredMesh", mesh);
-                     Material mat = new Material(assetManager,
-                     "Common/MatDefs/Misc/Unshaded.j3md");
-                     mat.setBoolean("VertexColor", true);
-
-        <<<<<<< HEAD
-             // To see the actual rendered quads rather than the wireframe, just comment
-             // outthis line.
-             mat.getAdditionalRenderState().setWireframe(true);
-        =======
-                     // To see the actual rendered quads rather than the wireframe, just comment outthis line.
-                     mat.getAdditionalRenderState().setWireframe(true);
-        >>>>>>> ShinySilver
-
-                     geo.setMaterial(mat);
-
-                     rootNode.attachChild(geo);
-                     */
         }
 
     } // End of private namespace
 
     Mesh *mesh(Chunk &chunk) {
-
-        Mesh *mesh = new Mesh();
-
-        /*
-         * These are just working variables for the algorithm - almost all taken
-         * directly from Mikola Lysenko's javascript implementation.
-         */
-        int i, j, k, l, w, h, u, v, n, side = 0;
-
-        int x[] = {0, 0, 0};
-        int q[] = {0, 0, 0};
-        int du[] = {0, 0, 0};
-        int dv[] = {0, 0, 0};
-
-        /*
-         * We create a mask - this will contain the groups of matching voxel faces
-         * as we proceed through the chunk in 6 directions - once for each face.
-         */
-        Color *mask[CHUNK_WIDTH * CHUNK_HEIGHT]; // TODO: transfer this from the stack to the
-        // heap?
-
-        /*
-         * These are just working variables to hold two faces during comparison.
-         */
-        Color *color, *color1;
-
-        /**
-		 * We start with the lesser-spotted bool for-loop (also known as the old flippy floppy).
-         *
-		 * The variable backFace will be TRUE on the first iteration and FALSE on the second - this
-		 * allows us to track which direction the indices should run during creation of the quad.
-         *
-		 * This loop runs twice, and the inner loop 3 times - totally 6 iterations - one for each
-		 * voxel face.
-         */
-        for (bool backFace = true, b = false; b != backFace;
-             backFace = backFace && b, b = !b) {
+            Mesh *mesh = new Mesh();
 
             /*
-			 * We sweep over the 3 dimensions - most of what follows is well described by Mikola
-			 * Lysenko in his post - and is ported from his Javascript implementation.  Where this
-			 * implementation diverges, I've added commentary.
+             * These are just working variables for the algorithm - almost all taken
+             * directly from Mikola Lysenko's javascript implementation.
              */
-            for (int d = 0; d < 3; d++) {
+            int i, j, k, l, w, h, u, v, n, side = 0;
 
-                u = (d + 1) % 3;
-                v = (d + 2) % 3;
+            int x[] = {0, 0, 0};
+            int q[] = {0, 0, 0};
+            int du[] = {0, 0, 0};
+            int dv[] = {0, 0, 0};
 
-                x[0] = 0;
-                x[1] = 0;
-                x[2] = 0;
+            /*
+             * We create a mask - this will contain the groups of matching voxel faces
+             * as we proceed through the chunk in 6 directions - once for each face.
+             */
+            VoxelFace *mask[CHUNK_WIDTH * CHUNK_HEIGHT]; // TODO: transfer this from the stack to the
+            // heap?
 
-                q[0] = 0;
-                q[1] = 0;
-                q[2] = 0;
-                q[d] = 1;
+            /*
+             * These are just working variables to hold two faces during comparison.
+             */
+            VoxelFace *voxelFace, *voxelFace1;
+
+            /**
+             * We start with the lesser-spotted bool for-loop (also known as the old flippy floppy).
+             *
+             * The variable backFace will be TRUE on the first iteration and FALSE on the second - this
+             * allows us to track which direction the indices should run during creation of the quad.
+             *
+             * This loop runs twice, and the inner loop 3 times - totally 6 iterations - one for each
+             * voxel face.
+             */
+            for (bool backFace = true, b = false; b != backFace;
+                 backFace = backFace && b, b = !b) {
 
                 /*
-                 * Here we're keeping track of the side that we're meshing.
+                 * We sweep over the 3 dimensions - most of what follows is well described by Mikola
+                 * Lysenko in his post - and is ported from his Javascript implementation.  Where this
+                 * implementation diverges, I've added commentary.
                  */
-                if (d == 0) {
-                    side = backFace ? WEST : EAST;
-                } else if (d == 1) {
-                    side = backFace ? BOTTOM : TOP;
-                } else if (d == 2) {
-                    side = backFace ? SOUTH : NORTH;
-                }
+                for (int d = 0; d < 3; d++) {
 
-                /*
-                 * We move through the dimension from front to back
-                 */
-                for (x[d] = -1; x[d] < CHUNK_WIDTH;) {
+                    u = (d + 1) % 3;
+                    v = (d + 2) % 3;
+
+                    x[0] = 0;
+                    x[1] = 0;
+                    x[2] = 0;
+
+                    q[0] = 0;
+                    q[1] = 0;
+                    q[2] = 0;
+                    q[d] = 1;
 
                     /*
-                     * -------------------------------------------------------------------
-                     *   We compute the mask
-                     * -------------------------------------------------------------------
+                     * Here we're keeping track of the side that we're meshing.
                      */
-                    n = 0;
-
-                    for (x[v] = 0; x[v] < CHUNK_HEIGHT; x[v]++) {
-
-                        for (x[u] = 0; x[u] < CHUNK_WIDTH; x[u]++) {
-                            /*
-                             * Here we retrieve two voxel faces for comparison.
-                             */
-                            color =
-                                    (x[d] >= 0) ?
-                                    getColor(x[0], x[1], x[2], side,
-                                             chunk) :
-                                    nullptr;
-                            color1 =
-                                    (x[d] < CHUNK_WIDTH - 1) ?
-                                    getColor(x[0] + q[0], x[1] + q[1],
-                                             x[2] + q[2], side, chunk) :
-                                    nullptr;
-                            /*
-							 * Note that we're using the equals function in the voxel face class
-							 * here, which lets the faces be compared based on any number of
-							 * attributes.
-                             *
-							 * Also, we choose the face to add to the mask depending on whether
-							 * we're moving through on a backface or not.
-                             */
-                            mask[n++] =
-                                    (color != nullptr && color1 != nullptr
-                                     && (*color == *color1) ||
-                                     !is_transparent(*color) && !is_transparent(*color1)) ?
-                                    nullptr :
-                                    backFace ? color1 : color;
-                        }
+                    if (d == 0) {
+                        side = backFace ? WEST : EAST;
+                    } else if (d == 1) {
+                        side = backFace ? BOTTOM : TOP;
+                    } else if (d == 2) {
+                        side = backFace ? SOUTH : NORTH;
                     }
 
-                    x[d]++;
-
                     /*
-                     * Now we generate the mesh for the mask
+                     * We move through the dimension from front to back
                      */
-                    n = 0;
+                    for (x[d] = -1; x[d] < CHUNK_WIDTH;) {
 
-                    for (j = 0; j < CHUNK_HEIGHT; j++) {
+                        /*
+                         * -------------------------------------------------------------------
+                         *   We compute the mask
+                         * -------------------------------------------------------------------
+                         */
+                        n = 0;
 
-                        for (i = 0; i < CHUNK_WIDTH;) {
+                        for (x[v] = 0; x[v] < CHUNK_HEIGHT; x[v]++) {
 
-                            if (mask[n] != nullptr) {
-
+                            for (x[u] = 0; x[u] < CHUNK_WIDTH; x[u]++) {
                                 /*
-                                 * We compute the width
+                                 * Here we retrieve two voxel faces for comparison.
                                  */
-                                for (w = 1;
-                                     i + w < CHUNK_WIDTH
-                                     && mask[n + w] != nullptr
-                                     && *mask[n + w] == *mask[n];
-                                     w++) {
-                                }
-
+                                voxelFace =
+                                        (x[d] >= 0) ?
+                                        getVoxelFace(x[0], x[1], x[2], side,
+                                                     chunk) :
+                                        nullptr;
+                                voxelFace1 =
+                                        (x[d] < CHUNK_WIDTH - 1) ?
+                                        getVoxelFace(x[0] + q[0], x[1] + q[1],
+                                                     x[2] + q[2], side, chunk) :
+                                        nullptr;
                                 /*
-                                 * Then we compute height
+                                 * Note that we're using the equals function in the voxel face class
+                                 * here, which lets the faces be compared based on any number of
+                                 * attributes.
+                                 *
+                                 * Also, we choose the face to add to the mask depending on whether
+                                 * we're moving through on a backface or not.
                                  */
-                                bool done = false;
+                                mask[n++] =
+                                        ((voxelFace != nullptr && voxelFace1 != nullptr
+                                          && (voxelFace->equals(*voxelFace1) ||
+                                              !voxelFace->transparent && !voxelFace1->transparent))) ?
+                                        nullptr :
+                                        backFace ? voxelFace1 : voxelFace;
+                            }
+                        }
 
-                                for (h = 1; j + h < CHUNK_HEIGHT; h++) {
+                        x[d]++;
 
-                                    for (k = 0; k < w; k++) {
+                        /*
+                         * Now we generate the mesh for the mask
+                         */
+                        n = 0;
 
-                                        if (mask[n + k + h * CHUNK_WIDTH] == nullptr
-                                            || *mask[n + k + h * CHUNK_WIDTH]!=
-                                                *mask[n]) {
-                                            done = true;
+                        for (j = 0; j < CHUNK_HEIGHT; j++) {
+
+                            for (i = 0; i < CHUNK_WIDTH;) {
+
+                                if (mask[n] != nullptr) {
+
+                                    /*
+                                     * We compute the width
+                                     */
+                                    for (w = 1;
+                                         i + w < CHUNK_WIDTH
+                                         && mask[n + w] != nullptr
+                                         && mask[n + w]->equals(mask[n]);
+                                         w++) {
+                                    }
+
+                                    /*
+                                     * Then we compute height
+                                     */
+                                    bool done = false;
+
+                                    for (h = 1; j + h < CHUNK_HEIGHT; h++) {
+
+                                        for (k = 0; k < w; k++) {
+
+                                            if (mask[n + k + h * CHUNK_WIDTH] == nullptr
+                                                || !mask[n + k + h * CHUNK_WIDTH]->equals(
+                                                    mask[n])) {
+                                                done = true;
+                                                break;
+                                            }
+                                        }
+
+                                        if (done) {
                                             break;
                                         }
                                     }
 
-                                    if (done) {
-                                        break;
-                                    }
-                                }
-
-                                /*
-                                 * Here we check the "transparent" attribute in the color class
-								 * to ensure that we don't mesh any culled faces.
-                                 */
-                                if (!is_transparent(*mask[n])) {
                                     /*
-                                     * Add quad
+                                     * Here we check the "transparent" attribute in the VoxelFace class
+                                     * to ensure that we don't mesh any culled faces.
                                      */
-                                    x[u] = i;
-                                    x[v] = j;
+                                    if (!mask[n]->transparent) {
+                                        /*
+                                         * Add quad
+                                         */
+                                        x[u] = i;
+                                        x[v] = j;
 
-                                    du[0] = 0;
-                                    du[1] = 0;
-                                    du[2] = 0;
-                                    du[u] = w;
+                                        du[0] = 0;
+                                        du[1] = 0;
+                                        du[2] = 0;
+                                        du[u] = w;
 
-                                    dv[0] = 0;
-                                    dv[1] = 0;
-                                    dv[2] = 0;
-                                    dv[v] = h;
+                                        dv[0] = 0;
+                                        dv[1] = 0;
+                                        dv[2] = 0;
+                                        dv[v] = h;
+
+                                        /*
+                                         * And here we call the quad function in order to render a
+                                         * merged quad in the scene.
+                                         *
+                                         * We pass mask[n] to the function, which is an instance of the
+                                         * VoxelFace class containing all the attributes of the face -
+                                         * which allows for variables to be passed to shaders
+                                         * - for example lighting values used to create ambient
+                                         * occlusion.
+                                         */
+                                        quad(glm::vec3(x[0], x[1], x[2]),
+                                             glm::vec3(x[0] + du[0], x[1] + du[1],
+                                                       x[2] + du[2]),
+                                             glm::vec3(x[0] + du[0] + dv[0],
+                                                       x[1] + du[1] + dv[1],
+                                                       x[2] + du[2] + dv[2]),
+                                             glm::vec3(x[0] + dv[0], x[1] + dv[1],
+                                                       x[2] + dv[2]), w, h, mask[n],
+                                             mesh, backFace);
+                                    }
 
                                     /*
-									 * And here we call the quad function in order to render a
-									 * merged quad in the scene.
-                                     *
-									 * We pass mask[n] to the function, which is an instance of the
-									 * color class containing all the attributes of the face -
-									 * which allows for variables to be passed to shaders 
-									 * - for example lighting values used to create ambient
-									 * occlusion.
+                                     * We zero out the mask
                                      */
-                                    quad(glm::vec3(x[0], x[1], x[2]),
-                                         glm::vec3(x[0] + du[0], x[1] + du[1],
-                                                   x[2] + du[2]),
-                                         glm::vec3(x[0] + du[0] + dv[0],
-                                                   x[1] + du[1] + dv[1],
-                                                   x[2] + du[2] + dv[2]),
-                                         glm::vec3(x[0] + dv[0], x[1] + dv[1],
-                                                   x[2] + dv[2]), w, h, *mask[n],
-                                         mesh, backFace);
-                                }
+                                    for (l = 0; l < h; ++l) {
 
-                                /*
-                                 * We zero out the mask
-                                 */
-                                for (l = 0; l < h; ++l) {
-
-                                    for (k = 0; k < w; ++k) {
-                                        mask[n + k + l * CHUNK_WIDTH] = nullptr;
+                                        for (k = 0; k < w; ++k) {
+                                            mask[n + k + l * CHUNK_WIDTH] = nullptr;
+                                        }
                                     }
+
+                                    /*
+                                     * And then finally increment the counters and continue
+                                     */
+                                    i += w;
+                                    n += w;
+
+                                } else {
+
+                                    i++;
+                                    n++;
                                 }
-
-                                /*
-                                 * And then finally increment the counters and continue
-                                 */
-                                i += w;
-                                n += w;
-
-                            } else {
-
-                                i++;
-                                n++;
                             }
                         }
                     }
                 }
             }
-        }
-        return mesh;
+            return mesh;
     }
 
 } // End of namespace GreedyMesher

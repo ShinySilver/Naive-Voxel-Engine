@@ -8,13 +8,17 @@
 
 #include "../common/utils/safe_queue.h"
 #include "../common/entities/entity.h"
+#include "chunk_cache.h"
 
 namespace chunk_loading {
+
+    using chunk_cache::ChunkCacheEntry;
+
     /**
      * The different queues used by both the client & the workers defined here
      * TODO: Think about a way to share 'em with the client without exposing them.
      */
-    extern SafeQueue<Entity *> preloading_queue;
+    extern SafeQueue<ChunkCacheEntry *> preloading_queue;
     extern SafeQueue<Entity *> loading_queue;
     extern SafeQueue<Entity *> unloading_queue;
 

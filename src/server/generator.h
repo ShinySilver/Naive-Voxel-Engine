@@ -15,7 +15,7 @@ namespace generator {
      * @param cell_coordinate
      * @param entity
      */
-    void generate(const glm::vec3 &cell_coordinate, Chunk *chunk);
+    Chunk *generate(const glm::vec3 &cell_coordinate);
 }
 
 

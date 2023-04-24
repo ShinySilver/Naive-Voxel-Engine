@@ -29,8 +29,7 @@ namespace server_networking {
         void worker_tick() {
             ChunkGenRequest *e = generation_queue.dequeue();
             if (e) {
-                Chunk *c;
-                generator::generate(e->cell_coordinate, c);
+                Chunk *c = generator::generate(e->cell_coordinate); // TODO: refactor chunk creation
                 e->callback(c);
             }
         }
