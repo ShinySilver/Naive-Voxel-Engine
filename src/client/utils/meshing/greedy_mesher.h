@@ -13,9 +13,10 @@
 #include <glm/glm/vec3.hpp>
 #include "mesh.h"
 
-#define VOXEL_SIZE (2.0f)
+#define VOXEL_SIZE (1.0f)
 #define CHUNK_WIDTH  CHUNK_SIZE
 #define CHUNK_HEIGHT CHUNK_SIZE
+#define VOXEL_AIR Color(0.0, 0.0, 0.0)
 
 /*
  *

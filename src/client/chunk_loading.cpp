@@ -28,23 +28,25 @@ namespace chunk_loading {
         static ChunkPos last_pos = location_to_chunk_pos(camera::get_location());
         ChunkPos new_pos = location_to_chunk_pos(camera::get_location());
 
-        if (last_pos == new_pos) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            return;
-        }
+        // if (last_pos == new_pos) {
+        //     std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        //     return;
+        // }
 
-        glm::vec3 delta = new_pos - last_pos;
-        glm::vec3 delta_sign = glm::sign(delta);
+        // glm::vec3 delta = new_pos - last_pos;
+        // glm::vec3 delta_sign = glm::sign(delta);
 
         ChunkCacheEntry *entry;
-        for (int dx = 0; dx < CACHE_WIDTH; ++dx) {
-            for (int dy = 0; dy < CACHE_WIDTH; ++dy) {
-                for (int dz = 0; dz < CACHE_WIDTH; ++dz) {
+        for (int dx = -VIEW_DISTANCE; dx <= VIEW_DISTANCE; ++dx) {
+            for (int dy = -VIEW_DISTANCE; dy <= VIEW_DISTANCE; ++dy) {
+                for (int dz = -VIEW_DISTANCE; dz <= VIEW_DISTANCE; ++dz) {
                     ChunkPos p = {new_pos.x + dx, new_pos.y + dy, new_pos.z + dz};
                     entry = chunk_cache::get_cache_entry(p);
 
                     // Checking whether the chunk is misplaced.
-                    if (entry->position == p || (entry->entity && !((Entity *) entry->entity)->is_loaded())) continue;
+                    if (entry->position == p || entry->entity != nullptr && !entry->entity->is_loaded()
+                        || entry->is_awaiting_mesh || entry->is_awaiting_voxels)
+                        continue;
 
                     // TODO what if we are meshing a neighbour and the chunk disappear? NPE?
                     // When we start meshing, for each nearby chunk we try to lock it. If we fail, we silently stop the
@@ -75,14 +77,15 @@ namespace chunk_loading {
 
     void worker_tick() {
         ChunkCacheEntry *entry = preloading_queue.dequeue();
-        if (entry != nullptr && entry->chunk_data != nullptr) { // mallocé mais pas créé!
+        if (entry != nullptr && !entry->is_air) { // mallocé mais pas créé!
             DLOG_S(4) << "Preloading chunk at chunk pos "
                       << entry->position.x << ";"
                       << entry->position.y << ";"
                       << entry->position.z << "";
             Mesh *mesh = GreedyMesher::mesh(*entry->chunk_data);
-            entry->entity = new EntityChunk(mesh);
+            entry->entity = new EntityChunk(mesh, Location(chunk_pos_to_world_pos(entry->position)));
             entry->entity->preload();
+            entry->is_awaiting_mesh = false;
             loading_queue.enqueue(entry->entity);
         }
     }

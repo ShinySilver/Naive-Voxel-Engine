@@ -40,7 +40,11 @@ namespace client_networking {
         server_networking::queue_chunk_generation_request(cache_entry->position, [cache_entry](Chunk *new_chunk) {
             if (new_chunk != nullptr) {
                 cache_entry->is_air = false;
+                if (cache_entry->chunk_data != nullptr){
+                    delete(cache_entry->chunk_data);
+                }
                 cache_entry->chunk_data = new_chunk;
+                cache_entry->is_awaiting_mesh = true;
                 cache_entry->is_awaiting_voxels = false;
                 chunk_loading::preloading_queue.enqueue(cache_entry);
             }else{

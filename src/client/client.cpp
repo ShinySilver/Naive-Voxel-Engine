@@ -137,7 +137,7 @@ namespace client {
         /**
          * Stats
          */
-        int chunk_unloaded_this_tick = 0, chunk_loaded_this_tick = 0, chunk_loaded = 0;
+        int chunk_unloaded_this_tick, chunk_loaded_this_tick, chunk_loaded = 0;
 
         /**
          * Render loop!
@@ -146,9 +146,30 @@ namespace client {
         while (!glfwWindowShouldClose(window)) {
 
             /**
-             * Removing the entities waiting in the unloading queue
+             * Adding to the scene entities waiting in the loading queue
              */
             Entity *tmp;
+            chunk_loaded_this_tick = 0;
+            while (!chunk_loading::loading_queue.empty()) {
+                chunk_loaded++;
+                chunk_loaded_this_tick++;
+                tmp = chunk_loading::loading_queue.dequeue();
+                tmp->load();
+                loaded_entities.emplace_back(tmp);
+
+                glm::vec3 chunk_pos = location_to_chunk_pos(tmp->getLocation());
+                DLOG_S(4) << "Loading chunk at chunk pos "
+                          << chunk_pos.x << ";"
+                          << chunk_pos.y << ";"
+                          << chunk_pos.z << " and pos "
+                          << tmp->getLocation().position.x << ";"
+                          << tmp->getLocation().position.y << ";"
+                          << tmp->getLocation().position.z << "";
+            }
+
+            /**
+             * Removing the entities waiting in the unloading queue
+             */
             chunk_unloaded_this_tick = 0;
             while (!chunk_loading::unloading_queue.empty()) {
                 // Updating statistics
@@ -176,27 +197,6 @@ namespace client {
 
                 // Actually freeing the chunk
                 delete(tmp); // TODO: think about chunk serialization.
-            }
-
-            /**
-             * Adding to the scene entities waiting in the loading queue
-             */
-            chunk_loaded_this_tick = 0;
-            while (!chunk_loading::loading_queue.empty()) {
-                chunk_loaded++;
-                chunk_loaded_this_tick++;
-                tmp = chunk_loading::loading_queue.dequeue();
-                tmp->load();
-                loaded_entities.emplace_back(tmp);
-
-                glm::vec3 chunk_pos = location_to_chunk_pos(tmp->getLocation());
-                DLOG_S(4) << "Loading chunk at chunk pos "
-                          << chunk_pos.x << ";"
-                          << chunk_pos.y << ";"
-                          << chunk_pos.z << " and pos "
-                          << tmp->getLocation().position.x << ";"
-                          << tmp->getLocation().position.y << ";"
-                          << tmp->getLocation().position.z << "";
             }
 
             /**

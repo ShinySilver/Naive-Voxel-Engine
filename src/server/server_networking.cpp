@@ -31,6 +31,7 @@ namespace server_networking {
             if (e) {
                 Chunk *c = generator::generate(e->cell_coordinate); // TODO: refactor chunk creation
                 e->callback(c);
+                delete(e);
             }
         }
     }

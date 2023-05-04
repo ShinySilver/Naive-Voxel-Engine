@@ -47,6 +47,11 @@ void EntityChunk::preload() {
 
 void EntityChunk::load() {
 
+    if(_is_loaded){
+        LOG_S(1) << "What the hell bro? You are trying to load an already loaded chunk!";
+        return;
+    }
+
     // Our VAO
     glGenVertexArrays(1, &vertexArrayID);
     glBindVertexArray(vertexArrayID);
@@ -76,7 +81,7 @@ void EntityChunk::load() {
     // 2nd attribute, colors
     glGenBuffers(1, &colorBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
-    glBufferData(GL_ARRAY_BUFFER, _mesh->colors.size() * sizeof(glm::vec3),
+    glBufferData(GL_ARRAY_BUFFER, _mesh->colors.size() * sizeof(Color),
                  _mesh->colors.data(), GL_STATIC_DRAW);
 
     // 3rd attribute, normals
@@ -85,7 +90,6 @@ void EntityChunk::load() {
     glBufferData(GL_ARRAY_BUFFER, _mesh->normals.size() * sizeof(glm::vec3),
                  _mesh->normals.data(), GL_STATIC_DRAW);
 
-    delete _mesh;
     _is_loaded = true;
     //std::cout << "Done preloading Chunk.\n";
 }

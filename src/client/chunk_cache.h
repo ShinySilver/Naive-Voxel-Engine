@@ -5,6 +5,7 @@
 #ifndef IVY_CHUNK_CACHE_H
 #define IVY_CHUNK_CACHE_H
 
+#include <bits/stdc++.h>
 #include "glm/glm/vec3.hpp"
 #include "../common/utils/positioning.h"
 #include "../common/entities/entity_chunk.h"
@@ -30,23 +31,22 @@ namespace chunk_cache {
         bool is_awaiting_mesh = false;
         bool is_face_obstructing[6] = {false};
         short meshing_readiness = 6; // ready to be meshed when down to 0
-
-
     } ChunkCacheEntry;
+
     namespace {
         ChunkCacheEntry cache[CACHE_WIDTH * CACHE_WIDTH * CACHE_WIDTH] = {};
     }
 
     inline EntityChunk *get_chunk(const ChunkPos &pos) {
-        return cache[((unsigned int) pos.x) % CACHE_WIDTH +
-                     CACHE_WIDTH * (((unsigned int) pos.y) % CACHE_WIDTH +
-                                    CACHE_WIDTH * (((unsigned int) pos.z) % CACHE_WIDTH))].entity;
+        return cache[(INT_MAX + (unsigned int)pos.x) % CACHE_WIDTH +
+                     CACHE_WIDTH * ((INT_MAX + (unsigned int) pos.y) % CACHE_WIDTH +
+                                    CACHE_WIDTH * ((INT_MAX + (unsigned int) pos.z) % CACHE_WIDTH))].entity;
     }
 
     inline ChunkCacheEntry *get_cache_entry(const ChunkPos &pos) {
-        return &cache[((unsigned int) pos.x) % CACHE_WIDTH +
-                      CACHE_WIDTH * (((unsigned int) pos.y) % CACHE_WIDTH +
-                                     CACHE_WIDTH * (((unsigned int) pos.z) % CACHE_WIDTH))];
+        return &cache[(INT_MAX + (unsigned int) pos.x) % CACHE_WIDTH +
+                      CACHE_WIDTH * ((INT_MAX + (unsigned int) pos.y) % CACHE_WIDTH +
+                                     CACHE_WIDTH * ((INT_MAX + (unsigned int) pos.z) % CACHE_WIDTH))];
     }
 }
 
