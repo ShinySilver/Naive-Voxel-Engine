@@ -40,9 +40,9 @@ private:
             normal_mat_ID,
             light_ID,
             view_ID;
+    static int active_instances;
 
     GLuint vertexArrayID = 0,
-            colorArrayID = 0,
             vertexBuffer = 0,
             colorBuffer = 0,
             normalBuffer = 0;

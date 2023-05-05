@@ -24,6 +24,7 @@ GLuint EntityChunk::matrix_ID = 0;
 GLuint EntityChunk::normal_mat_ID = 0;
 GLuint EntityChunk::light_ID = 0;
 GLuint EntityChunk::view_ID = 0;
+int EntityChunk::active_instances = 0;
 
 EntityChunk::EntityChunk(Mesh *mesh) :
         _mesh(mesh) {}
@@ -46,7 +47,6 @@ void EntityChunk::preload() {
 }
 
 void EntityChunk::load() {
-
     if(_is_loaded){
         LOG_S(1) << "What the hell bro? You are trying to load an already loaded chunk!";
         return;
@@ -56,7 +56,7 @@ void EntityChunk::load() {
     glGenVertexArrays(1, &vertexArrayID);
     glBindVertexArray(vertexArrayID);
 
-    if (!program_ID) {
+    if (active_instances==0) {
         // The 1st time, create and compile our GLSL program from the shaders
         LOG_S(1) << "Loading shaders...";
         program_ID = LoadShaders("resources/shaders/chunkColor/chunkColor.vert",
@@ -68,6 +68,8 @@ void EntityChunk::load() {
         light_ID = glGetUniformLocation(program_ID, "light_position");
         view_ID = glGetUniformLocation(program_ID, "view_position");
     }
+
+    active_instances++;
 
     //std::cout << "Creating VAB...\n";
     // First attribute of our VAO, vertices
@@ -157,8 +159,11 @@ void EntityChunk::draw(glm::mat4 &base, const glm::vec3 &light_pos, const glm::v
 }
 
 void EntityChunk::unload() {
+    active_instances--;
+    if(active_instances==0){
+        glDeleteProgram(program_ID);
+    }
     glDeleteVertexArrays(1, &vertexArrayID);
-    glDeleteProgram(program_ID);
     glDeleteBuffers(1, &vertexBuffer);
     glDeleteBuffers(1, &colorBuffer);
     glDeleteBuffers(1, &normalBuffer);
