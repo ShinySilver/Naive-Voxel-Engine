@@ -1,8 +1,12 @@
-#ifndef LOCATION_H
-#define LOCATION_H
+#ifndef POSITIONING_H
+#define POSITIONING_H
 
-struct Location {
-	glm::vec3 position, rotation, speed, rotationSpeed;
+typedef glm::vec3 ChunkPos;
+typedef glm::vec3 WorldPos;
+
+typedef struct Location {
+	WorldPos position;
+    glm::vec3 rotation, speed, rotationSpeed;
 
 	Location(glm::vec3 pos, glm::vec3 spd, glm::vec3 rot, glm::vec3 rotSpd) {
 		position = pos;
@@ -28,6 +32,8 @@ struct Location {
 		speed = glm::vec3{0.0f};
 		rotationSpeed = glm::vec3{0.0f};
 	}
-};
+} Location;
+
+#include "positioning.tcc"
 
 #endif

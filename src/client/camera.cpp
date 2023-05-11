@@ -6,7 +6,7 @@
  */
 
 #include "camera.h"
-#include "../common/utils/location.h"
+#include "../common/utils/positioning.h"
 
 #include <GLFW/glfw3.h>
 #include <glm/glm/vec3.hpp>

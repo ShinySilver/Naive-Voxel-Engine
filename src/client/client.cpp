@@ -10,24 +10,27 @@
 
 #include "context.h"
 #include "camera.h"
-#include "../common/world/world.h"
-#include "../common/world/grid.h"
+#include "../server/world.h"
 #include "../common/utils/worker.h"
 #include "../common/utils/safe_queue.h"
-#include "../common/world/entities/entity_chunk.h"
 #include "client_networking.h"
+#include "chunk_loading.h"
+#include "utils/colors.h"
+#include "utils/shader/text_renderer.h"
 
 #include <sstream>
 
 namespace client {
     namespace {
         float win_fov = 45.0f, win_ratio = (float) (16.0 / 9.0), z_far = 1e10f;
-        bool debug_mode = false, wire_mode = false, is_fullscreen = false, round_view_distance = false;
+        bool debug_mode = false, wire_mode = false, is_fullscreen = false, info_mode = false;
+
+        TextRenderer *font;
 
         glm::mat4 _projectionMatrix = glm::perspective(win_fov, win_ratio, 0.1f, z_far);
         glm::mat4 _viewMatrix, _matrix;
 
-		void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+        void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
             if (action == GLFW_PRESS) {
                 switch (key) {
                     case GLFW_KEY_F1:
@@ -43,6 +46,14 @@ namespace client {
                         } else {
                             LOG_S(INFO) << "Enabling OpenGL culling";
                             glEnable(GL_CULL_FACE);
+                        }
+                        break;
+                    case GLFW_KEY_F3:
+                        info_mode = !info_mode;
+                        if (info_mode) {
+                            LOG_S(INFO) << "Enabling F3 screen";
+                        } else {
+                            LOG_S(INFO) << "Disabling F3 screen";
                         }
                         break;
                     case GLFW_KEY_F11:
@@ -75,82 +86,16 @@ namespace client {
             glViewport(0, 0, width, height);
             win_ratio = float(width) / float(height);
             _projectionMatrix = glm::perspective(win_fov, win_ratio, 0.1f, z_far);
-            //_textRenderer->setRatio(width, height);
+            font->setRatio(width, height);
         }
 
         std::vector<Worker *> workers;
         std::vector<Entity *> loaded_entities;
-
-        SafeQueue<Entity *> preloading_queue;
-        SafeQueue<Entity *> loading_queue;
-        SafeQueue<Entity *> unloading_queue;
-        Entity *chunk_map[VIEW_DISTANCE * 2 + 1][VIEW_DISTANCE * 2 + 1][VIEW_DISTANCE * 2 + 1];
-
-        void main_worker_tick() {
-            glm::vec3 player_pos = grid::pos_to_chunk(camera::get_location());
-            Entity *e;
-            for (int dx = -VIEW_DISTANCE; dx <= VIEW_DISTANCE; dx++) {
-                for (int dy = -VIEW_DISTANCE; dy <= VIEW_DISTANCE; dy++) {
-                    for (int dz = -VIEW_DISTANCE; dz <= VIEW_DISTANCE; dz++) {
-
-                        // Naive "Round" view distance imp. For fun only. We only *load* in a circle around the camera
-                        if (round_view_distance && std::pow(dx, 2) + std::pow(dz, 2) >= std::pow(VIEW_DISTANCE, 2))
-                            continue;
-
-
-                        // We get the chunk in the cache corresponding to the given chunk pos
-                        e = chunk_map[((INT_MAX / 2 + (int) player_pos.x + dx)) % (VIEW_DISTANCE * 2 + 1)][
-                                ((INT_MAX / 2 + (int) player_pos.y + dy)) % (VIEW_DISTANCE * 2 + 1)]
-                        [((INT_MAX / 2 + (int) player_pos.z + dz)) % (VIEW_DISTANCE * 2 + 1)];
-
-                        // Skipping loading chunks - we are waiting for them to load before unloading 'em
-                        if (e == 0 || !e->is_loaded())
-                            continue;
-
-
-                        // If the chunk is out of view distance, mark it for unload & replace it with a new one
-                        if (grid::pos_to_chunk(e->getLocation()) != player_pos + glm::vec3(dx, dy, dz)) {
-                            unloading_queue.enqueue(e);
-                            chunk_map[((INT_MAX / 2 + (int) player_pos.x + dx)) % (VIEW_DISTANCE * 2 + 1)][
-                                    ((INT_MAX / 2 + (int) player_pos.y + dy)) % (VIEW_DISTANCE * 2 + 1)]
-                            [((INT_MAX / 2 + (int) player_pos.z + dz)) % (VIEW_DISTANCE * 2 + 1)] = 0;
-                            Entity *new_chunk = (Entity *) malloc(sizeof(EntityChunk));
-                            client_networking::load_cell_async(player_pos + glm::vec3(dx, dy, dz), new_chunk,
-                                                               [player_pos, dx, dy, dz](Entity *new_chunk) {
-                                                                   chunk_map[((INT_MAX / 2 + (int) player_pos.x + dx)) %
-                                                                             (VIEW_DISTANCE * 2 + 1)][
-                                                                           ((INT_MAX / 2 + (int) player_pos.y + dy)) %
-                                                                           (VIEW_DISTANCE * 2 + 1)]
-                                                                   [((INT_MAX / 2 + (int) player_pos.z + dz)) %
-                                                                    (VIEW_DISTANCE * 2 + 1)] = new_chunk;
-                                                                   preloading_queue.enqueue(new_chunk);
-                                                               });
-                        }
-                    }
-                }
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        }
-
-        void worker_tick() {
-            Entity *e = preloading_queue.dequeue();
-            if (e) {
-                glm::vec3 chunk_pos = grid::pos_to_chunk(e->getLocation());
-                DLOG_S(4) << "Preloading chunk at chunk pos "
-						 << chunk_pos.x << ";" 
-						 << chunk_pos.y << ";"
-						 << chunk_pos.z << " and pos "
-						 << e->getLocation().position.x << ";" 
-						 << e->getLocation().position.y << ";" 
-						 << e->getLocation().position.z << "";
-
-                e->preload();
-                loading_queue.enqueue(e);
-            }
-        }
     }
 
     void tick() {
+
+        LOG_S(INFO) << "Client starting!";
 
         /**
          * Creating context
@@ -159,45 +104,27 @@ namespace client {
         if (!(window = context::init())) ABORT_S() << "Could not init context!";
 
         /**
-         * Initializing chunk map
+         * Some ugly hacks for the text renderer
          */
-        {
-            glm::vec3 player_pos = grid::pos_to_chunk(camera::get_location());
-            Entity *e;
-            for (int dx = -VIEW_DISTANCE; dx <= VIEW_DISTANCE; dx++) {
-                for (int dy = -VIEW_DISTANCE; dy <= VIEW_DISTANCE; dy++) {
-                    for (int dz = -VIEW_DISTANCE; dz <= VIEW_DISTANCE; dz++) {
-                        e = (Entity *) malloc(sizeof(EntityChunk));
-                        client_networking::load_cell_async(player_pos + glm::vec3(dx, dy, dz), e,
-                                                           [player_pos, dx, dy, dz](Entity *new_chunk) {
-                                                               chunk_map[((INT_MAX / 2 + (int) player_pos.x + dx)) %
-                                                                         (VIEW_DISTANCE * 2 + 1)][
-                                                                       ((INT_MAX / 2 + (int) player_pos.y + dy)) %
-                                                                       (VIEW_DISTANCE * 2 + 1)]
-                                                               [((INT_MAX / 2 + (int) player_pos.z + dz)) %
-                                                                (VIEW_DISTANCE * 2 + 1)] = new_chunk;
-                                                               preloading_queue.enqueue(new_chunk);
-                                                           });
-                        /*world::load_cell(player_pos + glm::vec3(dx, dy, dz), e);
-                        chunk_map[((INT_MAX / 2 + (int) player_pos.x + dx)) % (VIEW_DISTANCE * 2 + 1)][
-                                ((INT_MAX / 2 + (int) player_pos.y + dy)) % (VIEW_DISTANCE * 2 + 1)]
-                        [((INT_MAX / 2 + (int) player_pos.z + dz)) % (VIEW_DISTANCE * 2 + 1)] = e;
-                        preloading_queue.enqueue(e);*/
-                    }
-                }
-            }
-        }
+        TextRenderer debug_font = TextRenderer("resources/fonts/arial.ttf", 1,
+                       1, WIN_WIDTH, WIN_HEIGHT);
+        font = &debug_font;
+
+        /**
+         * Initializing chunk loading around the camera
+         */
+        chunk_loading::init();
 
         /**
          * Starting workers
          */
         LOG_S(1) << "Client starting its worker threads....";
         workers = std::vector<Worker *>();
-        workers.emplace_back(new Worker("main_client_worker", main_worker_tick));
-        for (int i = 0; i < 2; ++i) {
-			std::stringstream name;
-			name << "client_worker_" << i+1;
-            workers.emplace_back(new Worker(name.str(), worker_tick));
+        workers.emplace_back(new Worker("main_client_worker", chunk_loading::main_worker_tick));
+        for (int i = 0; i < CLIENT_SECONDARY_WORKER_THREAD_NUMBER; ++i) {
+            std::stringstream name;
+            name << "client_worker_" << i + 1;
+            workers.emplace_back(new Worker(name.str(), chunk_loading::worker_tick));
         }
 
         /**
@@ -208,49 +135,68 @@ namespace client {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
         /**
+         * Stats
+         */
+        int chunk_unloaded_this_tick, chunk_loaded_this_tick, chunk_loaded = 0;
+
+        /**
          * Render loop!
          */
         LOG_S(1) << "Client ticking!";
         while (!glfwWindowShouldClose(window)) {
 
             /**
-             * Adding/removing entities waiting in the queues to the scene
+             * Adding to the scene entities waiting in the loading queue
              */
-            {
-                Entity *tmp;
-                while (!unloading_queue.empty()) {
-                    tmp = unloading_queue.dequeue();
-                    tmp->unload();
-                    auto it = std::find(loaded_entities.begin(), loaded_entities.end(), tmp);
-                    if (it != loaded_entities.end()) { loaded_entities.erase(it); }
+            Entity *tmp;
+            chunk_loaded_this_tick = 0;
+            while (!chunk_loading::loading_queue.empty()) {
+                chunk_loaded++;
+                chunk_loaded_this_tick++;
+                tmp = chunk_loading::loading_queue.dequeue();
+                tmp->load();
+                loaded_entities.emplace_back(tmp);
 
-                    glm::vec3 chunk_pos = grid::pos_to_chunk(tmp->getLocation());
-                    DLOG_S(4) << "Unloading chunk at chunk pos "
-							    << chunk_pos.x << ";"
-							    << chunk_pos.y <<";"
-							    << chunk_pos.z <<" and pos "
-							    << tmp->getLocation().position.x << ";" 
-							    << tmp->getLocation().position.y << ";" 
-							    << tmp->getLocation().position.z << "";
+                glm::vec3 chunk_pos = location_to_chunk_pos(tmp->getLocation());
+                DLOG_S(4) << "Loading chunk at chunk pos "
+                          << chunk_pos.x << ";"
+                          << chunk_pos.y << ";"
+                          << chunk_pos.z << " and pos "
+                          << tmp->getLocation().position.x << ";"
+                          << tmp->getLocation().position.y << ";"
+                          << tmp->getLocation().position.z << "";
+            }
 
-                    world::unload_cell(tmp);
-                    tmp->~Entity();
-                    free(tmp); // TODO: think about chunk serialization.
-                }
-                while (!loading_queue.empty()) {
-                    tmp = loading_queue.dequeue();
-                    tmp->load();
-                    loaded_entities.emplace_back(tmp);
+            /**
+             * Removing the entities waiting in the unloading queue
+             */
+            chunk_unloaded_this_tick = 0;
+            while (!chunk_loading::unloading_queue.empty()) {
+                // Updating statistics
+                chunk_loaded--;
+                chunk_unloaded_this_tick++;
 
-                    glm::vec3 chunk_pos = grid::pos_to_chunk(tmp->getLocation());
-                    DLOG_S(4) << "Loading chunk at chunk pos "
-							    << chunk_pos.x << ";"
-							    << chunk_pos.y << ";"
-							    << chunk_pos.z << " and pos "
-							    << tmp->getLocation().position.x << ";" 
-							    << tmp->getLocation().position.y << ";" 
-							    << tmp->getLocation().position.z << "";
-                }
+                // Unloading chunks
+                tmp = chunk_loading::unloading_queue.dequeue();
+                tmp->unload();
+                world::unload_cell(tmp); // Does nothing atm
+
+                // Keeping the entity list up to date. We might want to use a linked hashmap later on.
+                auto it = std::find(loaded_entities.begin(), loaded_entities.end(), tmp);
+                if (it != loaded_entities.end()) { loaded_entities.erase(it); }
+
+                // Some logging
+                glm::vec3 chunk_pos = location_to_chunk_pos(tmp->getLocation());
+                DLOG_S(4) << "Unloading chunk at chunk pos "
+                          << chunk_pos.x << ";"
+                          << chunk_pos.y << ";"
+                          << chunk_pos.z << " and pos "
+                          << tmp->getLocation().position.x << ";"
+                          << tmp->getLocation().position.y << ";"
+                          << tmp->getLocation().position.z << "";
+
+                // Actually freeing the chunk
+                delete(tmp); // TODO: think about chunk serialization.
             }
 
             /**
@@ -262,17 +208,50 @@ namespace client {
             glfwPollEvents();
 
             /**
-             * Rendering
+             * Rendering entities
              */
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             for (auto const entity: loaded_entities) {
                 entity->lock();
                 entity->fastUpdate();
-                //entity->draw(_matrix);
-                //TODO temporary light pos
                 entity->draw(_matrix, glm::vec3(100.0, 100.0, 100.0), camera::get_location().position);
                 entity->unlock();
             }
+
+            /**
+             * If enabled by pressing F3, we are showing some debug info
+             * TODO: replace this interface with one made with a nice library, and unlock the mouse with left alt.
+             */
+            if(info_mode){
+                debug_font.bind();
+                debug_font.renderText("iVy dev build ", 0.0125, 0.98, 0.4, colors::WHITE);
+                debug_font.renderText(__DATE__ ", " __TIME__, 0.0125, 0.95, 0.4, colors::WHITE);
+
+                Location l = camera::get_location();
+                std::stringstream ss;
+                ss << "X=" << std::fixed << std::setprecision(3) << l.position.x;
+                ss << " Y=" << std::fixed << std::setprecision(3) << l.position.y;
+                ss << " Z=" << std::fixed << std::setprecision(3) << l.position.z;
+                debug_font.renderText(ss.str(),0.0125, 0.91, 0.4, colors::WHITE);
+
+                ss = std::stringstream();
+                ss << "RX=" << std::fixed << std::setprecision(3) << l.rotation.x;
+                ss << " RY=" << std::fixed << std::setprecision(3) << l.rotation.y;
+                ss << " RZ=" << std::fixed << std::setprecision(3) << l.rotation.z;
+                debug_font.renderText(ss.str(),0.0125, 0.88, 0.4, colors::WHITE);
+
+                debug_font.renderText("chunks_loaded="+std::to_string(chunk_loaded),
+                                      0.0125, 0.84, 0.4, colors::WHITE);
+                debug_font.renderText("chunks_loaded_this_tick="+std::to_string(chunk_loaded_this_tick),
+                                      0.0125, 0.81, 0.4, colors::WHITE);
+                debug_font.renderText("chunks_unloaded_this_tick="+std::to_string(chunk_unloaded_this_tick),
+                                      0.0125, 0.78, 0.4, colors::WHITE);
+                debug_font.unbind();
+            }
+
+            /**
+             * Swapping buffers!
+             */
             glfwSwapBuffers(window);
         }
 
@@ -288,7 +267,7 @@ namespace client {
         for (int i = 0; i < 3; ++i) {
             workers[i]->stop();
         }
-        preloading_queue.unlock_all();
+        chunk_loading::preloading_queue.unlock_all();
         for (int i = 0; i < 3; ++i) {
             workers[i]->join();
             delete workers[i];

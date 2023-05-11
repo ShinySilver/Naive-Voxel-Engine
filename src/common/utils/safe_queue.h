@@ -60,6 +60,11 @@ public:
         c.notify_all();
     }
 
+    int size(){
+        std::unique_lock<std::mutex> lock(m);
+        return (int)q.size();
+    }
+
 private:
     std::queue<T> q;
     mutable std::mutex m;

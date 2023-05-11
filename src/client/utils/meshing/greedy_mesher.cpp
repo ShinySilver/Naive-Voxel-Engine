@@ -5,13 +5,12 @@
  *      Author: silverly
  */
 
-#include "chunk_util.h"
-
 #include <glm/glm/ext.hpp>
 #include <loguru.hpp>
 
-#include <initializer_list>
 #include <vector>
+#include "mesh.h"
+#include "greedy_mesher.h"
 
 #define CENTER_CHUNKS
 
@@ -22,154 +21,86 @@
 #define TOP    (4)
 #define BOTTOM (5)
 
-namespace ChunkUtil {
-
+namespace GreedyMesher {
     namespace {
-// Private functions
-
-/**
- * This function returns an instance of VoxelFace containing the attributes for one side of a voxel.
- * In this simple demo we just return a value from the sample data array.  However, in an actual
- * voxel engine, this function would check if the voxel face should be culled, and set per-face and
- * per-vertex values as well as voxel values in the returned instance.
- */
-		VoxelFace *getVoxelFace(int x, int y, int z, int side, Chunk &chunk) {
-
-            VoxelFace *voxelFace = &chunk.get(x, y, z).uniformFace;
-            voxelFace->side = side;
-            return voxelFace;
-        }
-
-/**
- * This function renders a single quad in the scene. This quad may represent many adjacent voxel
- * faces - so in order to create the illusion of many faces, you might consider using a tiling
- * function in your voxel shader. For this reason I've included the quad width and height as
- * parameters.
- *
- * For example, if your texture coordinates for a single voxel face were 0 - 1 on a given axis, they
- * should now be 0 - width or 0 - height. Then you can calculate the correct texture coordinate in
- * your fragement shader using coord.xy = fract(coord.xy).
- *
- *
- * @param bottomLeft
- * @param topLeft
- * @param topRight
- * @param bottomRight
- * @param width
- * @param height
- * @param voxel
- * @param backFace
- */
+        /**
+         * This function renders a single quad in the scene. This quad may represent many adjacent voxel
+         * faces - so in order to create the illusion of many faces, you might consider using a tiling
+         * function in your voxel shader. For this reason I've included the quad width and height as
+         * parameters.
+         *
+         * For example, if your texture coordinates for a single voxel face were 0 - 1 on a given axis, they
+         * should now be 0 - width or 0 - height. Then you can calculate the correct texture coordinate in
+         * your fragement shader using coord.xy = fract(coord.xy).
+         *
+         *
+         * @param bottomLeft
+         * @param topLeft
+         * @param topRight
+         * @param bottomRight
+         * @param width
+         * @param height
+         * @param voxel
+         * @param backFace
+         */
         void quad(glm::vec3 bottomLeft, glm::vec3 topLeft, glm::vec3 topRight,
-                  glm::vec3 bottomRight, int width, int height, VoxelFace *voxelFace,
+                  glm::vec3 bottomRight, int width, int height, Color *color,
                   Mesh *mesh, bool backFace) {
             //std::cout << "QUAD!\n";
 
             glm::vec3 vertices[4];
 
-#ifdef CENTER_CHUNKS
             float offset = -CHUNK_WIDTH * VOXEL_SIZE / 2.0f;
             vertices[2] = offset + topLeft * VOXEL_SIZE;
             vertices[3] = offset + topRight * VOXEL_SIZE;
             vertices[0] = offset + bottomLeft * VOXEL_SIZE;
             vertices[1] = offset + bottomRight * VOXEL_SIZE;
 
-#else
-            vertices[2] = topLeft * VOXEL_SIZE;
-            vertices[3] = topRight * VOXEL_SIZE;
-            vertices[0] = bottomLeft * VOXEL_SIZE;
-            vertices[1] = bottomRight * VOXEL_SIZE;
-#endif
-
-			// computing draw indexes (order of vertices to draw triangles)
-			std::vector<int> indexes;
-			if (backFace) {
-				indexes = { 2, 0, 1, 1, 3, 2 };
-			} else {
-				indexes = { 2, 3, 1, 1, 0, 2 };
-			}
-
-			// computing triangles normals
-			glm::vec3 normal1, normal2;
-			if(backFace) {
-				normal1 = glm::normalize(glm::cross(
-							vertices[1] - vertices[0], 
-							vertices[2] - vertices[0]
-						));
-				normal2 = glm::normalize(glm::cross(
-							vertices[2] - vertices[3], 
-							vertices[1] - vertices[3]
-						));
-			} else {
-				normal1 = glm::normalize(glm::cross(
-							vertices[2] - vertices[0], 
-							vertices[1] - vertices[0]
-						));
-				normal2 = glm::normalize(glm::cross(
-							vertices[1] - vertices[3], 
-							vertices[2] - vertices[3]
-						));
-			}
-
-			// generate mesh
-			for (int i : indexes) {
-				mesh->vertices.emplace_back(vertices[i]);
-				mesh->colors.emplace_back(voxelFace->color);
-			}
-			for(int i=0; i<3; ++i) {
-				mesh->normals.emplace_back(normal1);
-			}
-			for(int i=0; i<3; ++i) {
-				mesh->normals.emplace_back(normal2);
-			}
-
-	/*
-	 mesh.setBuffer(Type.Position, 3, BufferUtils.createFloatBuffer(vertices));
-	 mesh.setBuffer(Type.Color, 4, colorArray);
-	 mesh.setBuffer(Type.Index, 3, BufferUtils.createIntBuffer(indexes));
-	 mesh.updateBound();
-=======
+            // computing draw indexes (order of vertices to draw triangles)
             std::vector<int> indexes;
             if (backFace) {
-                indexes = {2, 0, 1, 1, 3, 2};
+                indexes = { 2, 0, 1, 1, 3, 2 };
             } else {
-                indexes = {2, 3, 1, 1, 0, 2};
+                indexes = { 2, 3, 1, 1, 0, 2 };
             }
 
+            // computing triangles normals
+            glm::vec3 normal1, normal2;
+            if(backFace) {
+                normal1 = glm::normalize(glm::cross(
+                        vertices[1] - vertices[0],
+                        vertices[2] - vertices[0]
+                ));
+                normal2 = glm::normalize(glm::cross(
+                        vertices[2] - vertices[3],
+                        vertices[1] - vertices[3]
+                ));
+            } else {
+                normal1 = glm::normalize(glm::cross(
+                        vertices[2] - vertices[0],
+                        vertices[1] - vertices[0]
+                ));
+                normal2 = glm::normalize(glm::cross(
+                        vertices[1] - vertices[3],
+                        vertices[2] - vertices[3]
+                ));
+            }
+
+            // generate mesh
             for (int i : indexes) {
                 mesh->vertices.emplace_back(vertices[i]);
-                mesh->colors.emplace_back(voxelFace->color);
+                mesh->colors.emplace_back(*color);
             }
-            /*
-             mesh.setBuffer(Type.Position, 3, BufferUtils.createFloatBuffer(vertices));
-             mesh.setBuffer(Type.Color, 4, colorArray);
-             mesh.setBuffer(Type.Index, 3, BufferUtils.createIntBuffer(indexes));
-             mesh.updateBound();
->>>>>>> ShinySilver
-
-             Geometry geo = new Geometry("ColoredMesh", mesh);
-             Material mat = new Material(assetManager,
-             "Common/MatDefs/Misc/Unshaded.j3md");
-             mat.setBoolean("VertexColor", true);
-
-<<<<<<< HEAD
-	 // To see the actual rendered quads rather than the wireframe, just comment
-	 // outthis line.
-	 mat.getAdditionalRenderState().setWireframe(true);
-=======
-             // To see the actual rendered quads rather than the wireframe, just comment outthis line.
-             mat.getAdditionalRenderState().setWireframe(true);
->>>>>>> ShinySilver
-
-             geo.setMaterial(mat);
-
-             rootNode.attachChild(geo);
-             */
+            for(int i=0; i<3; ++i) {
+                mesh->normals.emplace_back(normal1);
+            }
+            for(int i=0; i<3; ++i) {
+                mesh->normals.emplace_back(normal2);
+            }
         }
-
     } // End of private namespace
 
-    ChunkUtil::Mesh *greedyMesh(Chunk &chunk) {
+    Mesh *mesh(Chunk &chunk) {
 
         Mesh *mesh = new Mesh();
 
@@ -188,13 +119,12 @@ namespace ChunkUtil {
          * We create a mask - this will contain the groups of matching voxel faces
          * as we proceed through the chunk in 6 directions - once for each face.
          */
-		VoxelFace *mask[CHUNK_WIDTH * CHUNK_HEIGHT]; // TODO: transfer this from the stack to the
-													 // heap?
+        Color *mask[CHUNK_WIDTH * CHUNK_HEIGHT]; // TODO: transfer this from the stack to the heap?
 
         /*
          * These are just working variables to hold two faces during comparison.
          */
-        VoxelFace *voxelFace, *voxelFace1;
+        Color *voxelFace, *voxelFace1;
 
         /**
 		 * We start with the lesser-spotted bool for-loop (also known as the old flippy floppy).
@@ -257,15 +187,10 @@ namespace ChunkUtil {
                              * Here we retrieve two voxel faces for comparison.
                              */
                             voxelFace =
-                                    (x[d] >= 0) ?
-                                    getVoxelFace(x[0], x[1], x[2], side,
-                                                 chunk) :
-                                    nullptr;
+                                    (x[d] >= 0) ? chunk.get(x[0], x[1], x[2]) : nullptr;
                             voxelFace1 =
                                     (x[d] < CHUNK_WIDTH - 1) ?
-                                    getVoxelFace(x[0] + q[0], x[1] + q[1],
-                                                 x[2] + q[2], side, chunk) :
-                                    nullptr;
+                                    chunk.get(x[0] + q[0], x[1] + q[1], x[2] + q[2]) : nullptr;
                             /*
 							 * Note that we're using the equals function in the voxel face class
 							 * here, which lets the faces be compared based on any number of
@@ -276,8 +201,8 @@ namespace ChunkUtil {
                              */
                             mask[n++] =
                                     ((voxelFace != nullptr && voxelFace1 != nullptr
-                                      && (voxelFace->equals(*voxelFace1) ||
-                                          !voxelFace->transparent && !voxelFace1->transparent))) ?
+                                      && (*voxelFace==*voxelFace1 ||
+                                          *voxelFace!=VOXEL_AIR && *voxelFace1!=VOXEL_AIR))) ?
                                     nullptr :
                                     backFace ? voxelFace1 : voxelFace;
                         }
@@ -302,7 +227,7 @@ namespace ChunkUtil {
                                 for (w = 1;
                                      i + w < CHUNK_WIDTH
                                      && mask[n + w] != nullptr
-                                     && mask[n + w]->equals(mask[n]);
+                                     && *mask[n + w]==*mask[n];
                                      w++) {
                                 }
 
@@ -316,8 +241,7 @@ namespace ChunkUtil {
                                     for (k = 0; k < w; k++) {
 
                                         if (mask[n + k + h * CHUNK_WIDTH] == nullptr
-                                            || !mask[n + k + h * CHUNK_WIDTH]->equals(
-                                                mask[n])) {
+                                            || *mask[n + k + h * CHUNK_WIDTH]!=*mask[n]) {
                                             done = true;
                                             break;
                                         }
@@ -332,7 +256,7 @@ namespace ChunkUtil {
                                  * Here we check the "transparent" attribute in the VoxelFace class
 								 * to ensure that we don't mesh any culled faces.
                                  */
-                                if (!mask[n]->transparent) {
+                                if (*mask[n]!=VOXEL_AIR) {
                                     /*
                                      * Add quad
                                      */
@@ -355,7 +279,7 @@ namespace ChunkUtil {
                                      *
 									 * We pass mask[n] to the function, which is an instance of the
 									 * VoxelFace class containing all the attributes of the face -
-									 * which allows for variables to be passed to shaders 
+									 * which allows for variables to be passed to shaders
 									 * - for example lighting values used to create ambient
 									 * occlusion.
                                      */
@@ -398,29 +322,4 @@ namespace ChunkUtil {
         }
         return mesh;
     }
-
-    ChunkUtil::Mesh *naiveSurfaceNetsMesh(Chunk &chunk) {
-        return nullptr;
-    }
-
-    ChunkUtil::Mesh *naiveMeshWithCulling(Chunk &chunk) {
-        return nullptr;
-    }
-
-    void generateChunkMesh(Chunk &chunk, MesherType type) {
-        switch (type) {
-            default:
-            case GREEDY:
-                greedyMesh(chunk);
-                break;
-            case NAIVE_SURFACE_NET:
-                naiveSurfaceNetsMesh(chunk);
-                break;
-
-            case NAIVE_WITH_CULLING:
-                naiveMeshWithCulling(chunk);
-                break;
-        }
-    }
-
 } // End of namespace ChunkUtil

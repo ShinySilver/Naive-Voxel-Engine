@@ -5,7 +5,8 @@
 #ifndef IVY_GENERATOR_H
 #define IVY_GENERATOR_H
 
-#include "../common/world/entities/entity.h"
+#include "../common/entities/entity.h"
+#include "../client/utils/meshing/mesh.h"
 
 namespace generator {
     /**
@@ -14,7 +15,7 @@ namespace generator {
      * @param cell_coordinate
      * @param entity
      */
-    void generate(const glm::vec3 &cell_coordinate, Entity *entity);
+    Chunk *generate(const glm::vec3 &cell_coordinate);
 }
 
 

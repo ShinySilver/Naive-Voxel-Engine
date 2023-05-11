@@ -2,9 +2,8 @@
 // Created by silverly on 20/05/2021.
 //
 
-#include "../../server/generator.h"
+#include "generator.h"
 #include "world.h"
-#include "../../client/utils/mesher/chunk_util.h"
 
 #define TICK_RANGE 64
 #define VIEW_RANGE 128
@@ -30,13 +29,19 @@ namespace world {
         // Currently doing nothing
     }
 
+    /**
+     * @deprecated
+     */
     void load_cell(const glm::vec3 &cell_coordinate, Entity *entity) {
-        generator::generate(cell_coordinate, entity);
+        //generator::generate(cell_coordinate, entity);
     }
 
 
+    /**
+     * @deprecated
+     */
     void load_cell_with_callback(const glm::vec3 &cell_coordinate, Entity *entity, std::function<void(Entity *cell)> callback) {
-        generator::generate(cell_coordinate, entity);
+        //generator::generate(cell_coordinate, entity);
         callback(entity);
     }
 

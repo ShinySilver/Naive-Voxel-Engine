@@ -7,7 +7,7 @@
 #include <loguru.hpp>
 
 #include "server.h"
-#include "../common/world/world.h"
+#include "world.h"
 #include "server_networking.h"
 
 #include <atomic>
