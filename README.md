@@ -2,47 +2,22 @@
 
 ![A very random screenshot from a very experimental build](/resources/screenshots/experimental_build_1.png?raw=true)
 
-Bon du coup... On a notre compilation avec CMake
-qui marche. Aucune idée de comment on active l'opti,
-mais bon au moins on produit un executable.
+Un moteur de jeu voxel, designé avec comme objectif la pleine utilisation du GPU, du multithreading, et le support du multijoueur.
+L'objectif final est de générer des continents volants, de les afficher dans leur totalité (avec du LOD). L'objectif secondaire est d'être capable de créer voxel par voxel des machines - mongolfières, dirigeables, chacun ayant sa propre "grille" de voxel.
 
-Pour l'instant on charge:
- - glad
- - glfw3
- - pthread
+L'objectif est ambitieux, mais c'est avant tout un projet "pour le fun" sur le long terme. On verra bien ce qu'on arrive à faire.
 
-On va avoir besoin de:
- - glm
+Nous utilisons:
+ - glad: Une implémentation OpenGL
+ - glfw3: Fenêtre, clavier, souris
+ - pthread: Multithreading
+ - glm: Algèbre et calcul matriciel sur le CPU
 
-Et peut-être de:
- - enet
+Et peut-être qu'un jour on utilisera:
+ - enet: réseau
+ - imgui: ui de debug
+ - wangle: réseau
 
-Au niveau de l'architecture, je veux rester kiss le
-plus longtemps possible. Dans l'idée, ce qui est dans client est
-utilisé uniquement dans le thread principal, dans server ce qui est
-dans les autres threads, et dans common les enums partagés. C'est 
-server qui est chargé de maintenir la sync avec la remote - ou non.
-Il a donc son propre jeu de paquets
+Au niveau de l'architecture, je veux suivre KISS le plus longtemps possible (edit: ça a pas duré longtemps). Dans l'idée, on coupe le code en trois morceaux. Ce qui est dans client est utilisé uniquement par le thread principal, ce qui est dans server est utilisé uniquement par les threads du server, et les classes et structures de données partagées sont dans common.
 
-Dans client :
- - un namespace qui gère le contexte openGl créé par glfw
- - un namespace qui gère la machine à état interne du client. En
-   gros, c'est la mainloop, le namespace gère les events glfw qu'il
-   peut transformer en events clients qui sont envoyés à server.
-   Il gère aussi les renderers (lecture de common), le meshing, etc.
-
-Dans common :
- - le serveur écrit, le client lit
- - c'est une zone pour la communication entre client (mainthread) et
-   server (multithreads). Request queues, lists, mutex, etc, etc...
- - un dossier data/world pour la description des entités / du monde dans des
-   structs. Avec des refs à un entityType
-
-Dans server :
- - un namespace pour la liste des paquets
- - un namespace qui gère la machine à état interne du serveur.
-   Il gère les physiques, la worldgen et le ticking des entités/mécaniques.
-   C'est également le cas échéant le garant de la synchronisation
-   avec un hôte remote si il est slave. Ainsi, il forward les events et requêtes
-   clients à l'hôte. À l'inverse si il est host, il forward les requêtes
-   du client remote dans common.
+Le thread client communique avec les thread server via "client_networking.hpp" qui est dans client, et inversement pour les threads server via "server-networking.hpp". Dans l'état actuel, client_networking et server_networking trichent et communiquent directement sans utiliser le réseau, mais ça sera facile à modifier.
