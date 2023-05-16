@@ -171,7 +171,7 @@ namespace GreedyMesher {
                 /*
                  * We move through the dimension from front to back
                  */
-                for (x[d] = -1; x[d] < CHUNK_WIDTH;) {
+                for (x[d] = 0; x[d] < CHUNK_WIDTH-1;) {
 
                     /*
                      * -------------------------------------------------------------------
