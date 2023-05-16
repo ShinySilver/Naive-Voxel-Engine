@@ -33,9 +33,6 @@ namespace chunk_loading {
         //     return;
         // }
 
-        // glm::vec3 delta = new_pos - last_pos;
-        // glm::vec3 delta_sign = glm::sign(delta);
-
         ChunkCacheEntry *entry;
         for (int dx = -VIEW_DISTANCE; dx <= VIEW_DISTANCE; ++dx) {
             for (int dy = -VIEW_DISTANCE; dy <= VIEW_DISTANCE; ++dy) {
@@ -43,10 +40,27 @@ namespace chunk_loading {
                     ChunkPos p = {new_pos.x + dx, new_pos.y + dy, new_pos.z + dz};
                     entry = chunk_cache::get_cache_entry(p);
 
-                    // Checking whether the chunk is misplaced.
+                    // Skipping if the chunk is correctly placed
                     if (entry->position == p || entry->entity != nullptr && !entry->entity->is_loaded()
                         || entry->is_awaiting_mesh || entry->is_awaiting_voxels)
                         continue;
+
+                    /*
+                                         if (entry->entity != nullptr) {
+                        if (entry->is_awaiting_mesh) {
+                            queue.lock();
+                            if (queue.has(entry)) {
+                                queue.remove(entry);
+                            }else{
+                                queue.unlock();
+                                continue;
+                            }
+                            queue.unlock();
+                        } else if (entry->is_awaiting_voxels) {
+
+                        }
+                    }
+                     * */
 
                     // TODO what if we are meshing a neighbour and the chunk disappear? NPE?
                     // When we start meshing, for each nearby chunk we try to lock it. If we fail, we silently stop the

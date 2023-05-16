@@ -23,10 +23,10 @@ namespace generator {
 
         inline bool is_empty(const glm::vec3 &c) {
             glm::vec3 ce = c + glm::vec3(CHUNK_SIZE - 1);
-            return height(c.x, c.z) > c.y - CHUNK_SIZE * VOXEL_SIZE * UNDER_CULLING_RATE
+            return not (height(c.x, c.z) > c.y - CHUNK_SIZE * VOXEL_SIZE * UNDER_CULLING_RATE
                    && height(ce.x, c.z) > c.y - CHUNK_SIZE * VOXEL_SIZE * UNDER_CULLING_RATE
                    && height(c.x, ce.z) > c.y - CHUNK_SIZE * VOXEL_SIZE * UNDER_CULLING_RATE
-                   && height(ce.x, ce.z) > c.y - CHUNK_SIZE * VOXEL_SIZE * UNDER_CULLING_RATE;
+                   && height(ce.x, ce.z) > c.y - CHUNK_SIZE * VOXEL_SIZE * UNDER_CULLING_RATE);
         }
     }
 
@@ -37,7 +37,7 @@ namespace generator {
                                                    * float(CHUNK_SIZE * VOXEL_SIZE);
 
         // Checking if this is an empty chunk. If yes, go fast and skip it
-        if (is_empty(cell_coordinate * (float) CHUNK_SIZE)) {
+        if (not is_empty(cell_coordinate * (float) CHUNK_SIZE)) {
             Voxel *data = (Voxel *) malloc(sizeof(Voxel) * CHUNK_SIZE_CUBED);
             Chunk *chunk = new Chunk(data);
             for (int dx = 0; dx < CHUNK_SIZE; ++dx) {

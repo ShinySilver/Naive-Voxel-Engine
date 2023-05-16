@@ -29,8 +29,6 @@ namespace chunk_cache {
         bool is_air = false;
         bool is_awaiting_voxels = false;
         bool is_awaiting_mesh = false;
-        bool is_face_obstructing[6] = {false};
-        short meshing_readiness = 6; // ready to be meshed when down to 0
     } ChunkCacheEntry;
 
     namespace {

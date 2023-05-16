@@ -5,7 +5,7 @@
 #ifndef IVY_CHUNK_H
 #define IVY_CHUNK_H
 
-#define CHUNK_SIZE (32)
+#define CHUNK_SIZE (64)
 #define CHUNK_SIZE_CUBED (CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE)
 
 typedef glm::vec3 Color;
