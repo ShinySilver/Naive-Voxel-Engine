@@ -16,14 +16,13 @@
 #define VOXEL_SIZE (1.0f)
 #define CHUNK_WIDTH  CHUNK_SIZE
 #define CHUNK_HEIGHT CHUNK_SIZE
-#define VOXEL_AIR Color(0.0, 0.0, 0.0)
 
 /*
  *
  */
 namespace GreedyMesher {
 
-    Mesh* mesh(Chunk& chunk);
+    Mesh* mesh(Chunk& chunk, Chunk *neighbours);
 
 } //namespace GreedyMesher
 

@@ -60,10 +60,6 @@ namespace server_networking {
         }
     }
 
-    void queue_chunk_request() {
-
-    }
-
     void queue_chunk_generation_request(const glm::vec3 cell_coordinate,
                                         std::function<void(Chunk *chunk)> callback) {
         generation_queue.enqueue(new ChunkGenRequest(cell_coordinate, callback)); // TODO: check C++11 for move

@@ -14,15 +14,15 @@ typedef Color Voxel;
 
 struct Chunk {
 public:
-    inline Chunk(Voxel *data) : data{data} {}
+    inline Chunk() : data{} {}
+    inline ~Chunk(){}
 
-    inline Voxel *get(int x, int y, int z) { return &data[x + CHUNK_SIZE * y + CHUNK_SIZE * CHUNK_SIZE * z]; }
+    inline Voxel *get(int x, int y, int z) { return &data[x + CHUNK_SIZE * y + CHUNK_SIZE * CHUNK_SIZE * z];}
 
-    inline void set(int x, int y, int z, Voxel v) { data[x + CHUNK_SIZE * y + CHUNK_SIZE * CHUNK_SIZE * z] = v; }
+    inline void set(int x, int y, int z, Voxel v) { data[x + CHUNK_SIZE * y + CHUNK_SIZE * CHUNK_SIZE * z] = v; is_empty=false;}
 
-    inline bool is_empty() { return data; }
-
-    Voxel *data;
+    Voxel data[CHUNK_SIZE_CUBED];
+    bool is_empty;
 };
 
 #endif //IVY_CHUNK_H

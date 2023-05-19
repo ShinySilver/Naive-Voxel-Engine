@@ -7,26 +7,19 @@
 #include "generator.h"
 #include "../client/utils/meshing/greedy_mesher.h"
 #include "../common/world/chunk.h"
+#include "../common/world/voxels.h"
 #include "../common/entities/entity_chunk.h"
 
-#define VOXEL_STONE Voxel(0.53, 0.55, 0.55)
-#define VOXEL_DIRT Voxel(0.6, 0.46, 0.32)
-#define VOXEL_GRASS Voxel(0.1, 0.6, 0.1)
-#define VOXEL_AIR Voxel(0.0, 0.0, 0.0)
-#define UNDER_CULLING_RATE 2
+#define UNDER_CULLING_RATE 1
+#define SIMPLEX_1_WIDTH 256.0f
+#define SIMPLEX_1_HEIGHT 128
+
+// Ou 64 48
 
 namespace generator {
     namespace {
-        inline int height(int x, int z) {
-            return (1 + glm::simplex(glm::vec2(x / 64.0f, z / 64.0f))) * 48;
-        }
-
-        inline bool is_empty(const glm::vec3 &c) {
-            glm::vec3 ce = c + glm::vec3(CHUNK_SIZE - 1);
-            return not (height(c.x, c.z) > c.y - CHUNK_SIZE * VOXEL_SIZE * UNDER_CULLING_RATE
-                   && height(ce.x, c.z) > c.y - CHUNK_SIZE * VOXEL_SIZE * UNDER_CULLING_RATE
-                   && height(c.x, ce.z) > c.y - CHUNK_SIZE * VOXEL_SIZE * UNDER_CULLING_RATE
-                   && height(ce.x, ce.z) > c.y - CHUNK_SIZE * VOXEL_SIZE * UNDER_CULLING_RATE);
+        inline int height(float x, float z) {
+            return (1 + glm::simplex(glm::vec2(x / SIMPLEX_1_WIDTH, z / SIMPLEX_1_WIDTH))) * SIMPLEX_1_HEIGHT;
         }
     }
 
@@ -37,27 +30,26 @@ namespace generator {
                                                    * float(CHUNK_SIZE * VOXEL_SIZE);
 
         // Checking if this is an empty chunk. If yes, go fast and skip it
-        if (not is_empty(cell_coordinate * (float) CHUNK_SIZE)) {
-            Voxel *data = (Voxel *) malloc(sizeof(Voxel) * CHUNK_SIZE_CUBED);
-            Chunk *chunk = new Chunk(data);
-            for (int dx = 0; dx < CHUNK_SIZE; ++dx) {
-                for (int dz = 0; dz < CHUNK_SIZE; ++dz) {
-                    int h = height(cell_coordinate.x * CHUNK_SIZE + dx, cell_coordinate.z * CHUNK_SIZE + dz);
-                    for (int dy = 0; dy < CHUNK_SIZE; ++dy) {
-                        if (cell_coordinate.y * CHUNK_SIZE + dy < h - 5) {
-                            chunk->set(dx, dy, dz, VOXEL_STONE);
-                        } else if (cell_coordinate.y * CHUNK_SIZE + dy < h - 1) {
-                            chunk->set(dx, dy, dz, VOXEL_DIRT);
-                        } else if (cell_coordinate.y * CHUNK_SIZE + dy <= h) {
-                            chunk->set(dx, dy, dz, VOXEL_GRASS);
-                        } else {
-                            chunk->set(dx, dy, dz, VOXEL_AIR);
-                        }
+        Chunk *chunk = new Chunk();
+        for (int dx = 0; dx < CHUNK_SIZE; ++dx) {
+            for (int dz = 0; dz < CHUNK_SIZE; ++dz) {
+                int h = std::min(height(cell_coordinate.x * CHUNK_SIZE + dx, cell_coordinate.z * CHUNK_SIZE + dz),
+                            int((cell_coordinate.y + 1) * CHUNK_SIZE));
+                for (int dy = 0; dy < h-cell_coordinate.y * CHUNK_SIZE; ++dy) {
+                    if (cell_coordinate.y * CHUNK_SIZE + dy < h - 5) {
+                        chunk->set(dx, dy, dz, VOXEL_STONE);
+                    } else if (cell_coordinate.y * CHUNK_SIZE + dy < h - 1) {
+                        chunk->set(dx, dy, dz, VOXEL_DIRT);
+                    } else if (cell_coordinate.y * CHUNK_SIZE + dy <= h) {
+                        chunk->set(dx, dy, dz, VOXEL_GRASS);
                     }
                 }
             }
-            return chunk;
         }
-        return nullptr;
+        if (chunk->is_empty) {
+            delete (chunk);
+            return nullptr;
+        }
+        return chunk;
     }
 }

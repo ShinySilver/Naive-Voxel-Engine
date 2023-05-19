@@ -35,16 +35,6 @@ EntityChunk::EntityChunk(Mesh *mesh, Location loc) :
 
 void EntityChunk::preload() {
     //std::cout << "Preloading Chunk.\n";
-
-    // Read our .obj file
-    //std::vector<glm::vec3> vertices;
-    //std::vector<glm::vec3> colors;
-    //loadOBJ("resources/models/example/cube.obj", vertices, uvs, normals);
-    //glm::vec3 chunk_pos = grid::location_to_chunk_pos(getLocation());
-    //std::cout << "Meshing chunk at " << int(chunk_pos.x) << "; "
-    //          << int(chunk_pos.y) << "; "
-    //          << int(chunk_pos.z) << "...\n";
-    //_mesh = GreedyMesher::greedyMesh(_chunk);
 }
 
 void EntityChunk::load() {
@@ -98,6 +88,8 @@ void EntityChunk::load() {
 }
 
 void EntityChunk::draw(glm::mat4 &projection_matrix, const glm::vec3 &light_pos, const glm::vec3 &view_pos) {
+
+    if(_mesh->vertices.size()==0) return;
 
     // shader program
     glUseProgram(program_ID);

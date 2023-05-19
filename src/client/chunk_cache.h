@@ -12,7 +12,8 @@
 #include "utils/meshing/mesh.h"
 #include "client.h"
 
-#define CACHE_WIDTH (VIEW_DISTANCE * 2 + 1)
+#define CACHE_BORDER_SIZE 1
+#define CACHE_WIDTH ((VIEW_DISTANCE + CACHE_BORDER_SIZE) * 2 + 1)
 
 namespace chunk_cache {
     typedef struct ChunkCacheEntry {
@@ -29,6 +30,7 @@ namespace chunk_cache {
         bool is_air = false;
         bool is_awaiting_voxels = false;
         bool is_awaiting_mesh = false;
+        bool should_cull = true;
     } ChunkCacheEntry;
 
     namespace {
