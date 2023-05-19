@@ -34,8 +34,8 @@ namespace generator {
         for (int dx = 0; dx < CHUNK_SIZE; ++dx) {
             for (int dz = 0; dz < CHUNK_SIZE; ++dz) {
                 int h = std::min(height(cell_coordinate.x * CHUNK_SIZE + dx, cell_coordinate.z * CHUNK_SIZE + dz),
-                            int((cell_coordinate.y + 1) * CHUNK_SIZE));
-                for (int dy = 0; dy < h-cell_coordinate.y * CHUNK_SIZE; ++dy) {
+                                 int((cell_coordinate.y + 1) * CHUNK_SIZE));
+                for (int dy = 0; dy < h - cell_coordinate.y * CHUNK_SIZE; ++dy) {
                     if (cell_coordinate.y * CHUNK_SIZE + dy < h - 5) {
                         chunk->set(dx, dy, dz, VOXEL_STONE);
                     } else if (cell_coordinate.y * CHUNK_SIZE + dy < h - 1) {

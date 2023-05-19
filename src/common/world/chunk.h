@@ -14,7 +14,7 @@ typedef Color Voxel;
 
 struct Chunk {
 public:
-    inline Chunk() : data{} {}
+    inline Chunk() : data{}, is_empty{true} {}
     inline ~Chunk(){}
 
     inline Voxel *get(int x, int y, int z) { return &data[x + CHUNK_SIZE * y + CHUNK_SIZE * CHUNK_SIZE * z];}
