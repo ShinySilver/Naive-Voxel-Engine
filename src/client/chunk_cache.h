@@ -18,7 +18,7 @@
 namespace chunk_cache {
     typedef struct ChunkCacheEntry {
         // Chunk identifier
-        ChunkPos position;
+        ChunkPos position{FLT_MAX};
 
         // Content of this cache cell
         EntityChunk *entity = 0;
@@ -31,6 +31,7 @@ namespace chunk_cache {
         bool is_awaiting_voxels = false;
         bool is_awaiting_mesh = false;
         bool should_cull = true;
+        bool in_processing = false;
     } ChunkCacheEntry;
 
     namespace {

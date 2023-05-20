@@ -23,6 +23,10 @@ public:
 
     Voxel data[CHUNK_SIZE_CUBED];
     bool is_empty;
+
+    bool has_full_face(glm::vec3 direction) {
+        return false;
+    }
 };
 
 #endif //IVY_CHUNK_H
