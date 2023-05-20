@@ -94,30 +94,32 @@ namespace chunk_loading {
 
                 // If the chunk we want to mark as not to cull has invalid chunk pos and is not loading,
                 // we can fix chunk pos and mark it IF WE DON'T HAVE A FULL FACE LOOKING TOWARDS IT
-                if (neighbour->position != p && !neighbour->in_processing) {
-                    if (entry->chunk_data == nullptr || entry->chunk_data->has_full_face(direction)) continue;
+                if (neighbour->position != p) {
+                    if (!neighbour->in_processing) {
+                        if (entry->chunk_data == nullptr || entry->chunk_data->has_full_face(direction)) continue;
 
 #if KEEP_CHUNKS_DATA_IN_MEMORY == false
-                    if (neighbour->chunk_data != nullptr) {
-                        delete (entry->chunk_data);
-                        neighbour->chunk_data = nullptr;
-                    }
+                        if (neighbour->chunk_data != nullptr) {
+                            delete (entry->chunk_data);
+                            neighbour->chunk_data = nullptr;
+                        }
 #endif
 
-                    if (neighbour->entity != nullptr) {
-                        unloading_queue.enqueue(entry->entity);
-                        neighbour->entity = nullptr;
-                    }
+                        if (neighbour->entity != nullptr) {
+                            unloading_queue.enqueue(entry->entity);
+                            neighbour->entity = nullptr;
+                        }
 
-                    neighbour->position = p;
-                    neighbour->should_cull = false;
-                } else {
-                    // otherwise, we can only wait for it to load before fixing it. Annoying.
-                    // TODO: make TWO queues, so that we don't have this check to do for most chunks.
-                    glm::vec3 dist_to_player = neighbour->position - new_pos;
-                    if (dist_to_player.x <= VIEW_DISTANCE + 1 || dist_to_player.y <= VIEW_DISTANCE + 1 ||
-                        dist_to_player.z <= VIEW_DISTANCE + 1) {
-                        cascading_loading_queue.enqueue(entry);
+                        neighbour->position = p;
+                        neighbour->should_cull = false;
+                    } else {
+                        // otherwise, we can only wait for it to load before fixing it. Annoying.
+                        // TODO: make TWO queues, so that we don't have this check to do for most chunks.
+                        glm::vec3 dist_to_player = neighbour->position - new_pos;
+                        if (dist_to_player.x <= VIEW_DISTANCE + 1 || dist_to_player.y <= VIEW_DISTANCE + 1 ||
+                            dist_to_player.z <= VIEW_DISTANCE + 1) {
+                            cascading_loading_queue.enqueue(entry);
+                        }
                     }
                 }
             }

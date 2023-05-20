@@ -19,6 +19,7 @@ namespace chunk_loading {
      * TODO: Think about a way to share 'em with the client without exposing them.
      */
     extern SafeQueue<ChunkCacheEntry *> preloading_queue;
+    extern SafeQueue<ChunkCacheEntry *> cascading_loading_queue;
     extern SafeQueue<Entity *> loading_queue;
     extern SafeQueue<Entity *> unloading_queue;
 

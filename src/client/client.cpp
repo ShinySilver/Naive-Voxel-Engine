@@ -332,6 +332,24 @@ namespace client {
                         std::to_string(int(round(avg_frame_duration / CLOCKS_PER_SEC * 1000))) + " ms / "
                         +std::to_string(int(round(1/(avg_frame_duration / CLOCKS_PER_SEC))))+" FPS",
                         0.0125, 0.46, 0.4, colors::PINK);
+
+                debug_font.renderText(
+                        "loading_queue_size=" +
+                        std::to_string(chunk_loading::loading_queue.size()) + " entities",
+                        0.0125, 0.42, 0.4, colors::WHITE);
+                debug_font.renderText(
+                        "unloading_queue_size=" +
+                        std::to_string(chunk_loading::unloading_queue.size()) + " entities",
+                        0.0125, 0.39, 0.4, colors::WHITE);
+
+                debug_font.renderText(
+                        "preloading_queue_size=" +
+                        std::to_string(chunk_loading::preloading_queue.size()) + " cache entries",
+                        0.0125, 0.35, 0.4, colors::WHITE);
+                debug_font.renderText(
+                        "cascading_loading_queue_size=" +
+                        std::to_string(chunk_loading::cascading_loading_queue.size()) + " cache entries",
+                        0.0125, 0.32, 0.4, colors::WHITE);
                 debug_font.unbind();
                 avg_time_spent_rendering_ui = avg_time_spent_rendering_ui * 0.99 + 0.01 * (clock() - t0);
             }
