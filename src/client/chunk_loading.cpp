@@ -33,9 +33,9 @@ namespace chunk_loading {
 
         ChunkCacheEntry *entry;
         ChunkPos p;
-        for (int dx = -VIEW_DISTANCE; dx <= VIEW_DISTANCE; ++dx) {
-            for (int dy = -VIEW_DISTANCE; dy <= VIEW_DISTANCE; ++dy) {
-                for (int dz = -VIEW_DISTANCE; dz <= VIEW_DISTANCE; ++dz) {
+        for (int dx = -VIEW_DISTANCE-1; dx <= VIEW_DISTANCE+1; ++dx) {
+            for (int dy = -VIEW_DISTANCE-1; dy <= VIEW_DISTANCE+1; ++dy) {
+                for (int dz = -VIEW_DISTANCE-1; dz <= VIEW_DISTANCE+1; ++dz) {
                     p = {new_pos.x + dx, new_pos.y + dy, new_pos.z + dz};
                     entry = chunk_cache::get_cache_entry(p);
 
@@ -52,6 +52,11 @@ namespace chunk_loading {
 
                     // Not loading chunk that are marked as culled (aside from the player's chunk)
                     if (entry->last_valid_pos != p && !(!dx && !dy && !dz)) {
+                        continue;
+                    }
+
+                    // Only unloading when outside the soft view distance
+                    if (dx > VIEW_DISTANCE || dy > VIEW_DISTANCE || dz > VIEW_DISTANCE) {
                         continue;
                     }
 
@@ -85,7 +90,7 @@ namespace chunk_loading {
         for (int i = 0; i < queue_size; i++) {
             pos = cascading_loading_queue.dequeue();
 
-            // First of all, we don't try to propagate worldgen out of the hard view distance
+            // First, we don't try to propagate worldgen from outside the soft view distance
             glm::vec3 dist_to_player = *pos - new_pos;
             if (std::abs(dist_to_player.x) > VIEW_DISTANCE ||
                 std::abs(dist_to_player.y) > VIEW_DISTANCE ||
@@ -96,7 +101,6 @@ namespace chunk_loading {
             // Then we mark all the neighbours
             for (auto direction: Directions::All) {
                 p = *pos + direction;
-
                 chunk_cache::get_cache_entry(p)->last_valid_pos = p;
             }
         }
