@@ -14,15 +14,14 @@ typedef Color Voxel;
 
 struct Chunk {
 public:
-    inline Chunk() : data{}, is_empty{true} {}
+    inline Chunk() : data{} {}
     inline ~Chunk(){}
 
     inline Voxel *get(int x, int y, int z) { return &data[x + CHUNK_SIZE * y + CHUNK_SIZE * CHUNK_SIZE * z];}
 
-    inline void set(int x, int y, int z, Voxel v) { data[x + CHUNK_SIZE * y + CHUNK_SIZE * CHUNK_SIZE * z] = v; is_empty=false;}
+    inline void set(int x, int y, int z, Voxel v) { data[x + CHUNK_SIZE * y + CHUNK_SIZE * CHUNK_SIZE * z] = v;}
 
     Voxel data[CHUNK_SIZE_CUBED];
-    bool is_empty;
 
     bool has_full_face(glm::vec3 direction) {
         return false;

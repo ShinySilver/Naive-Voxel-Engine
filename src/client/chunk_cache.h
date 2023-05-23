@@ -26,11 +26,13 @@ namespace chunk_cache {
         // Plain chunk data
         Chunk *chunk_data = 0;
 
+        // The pos of this chunk the last time it was explored by the cascading worldgen
+        ChunkPos last_valid_pos = glm::vec3();
+
         // Flags
         bool is_air = false;
         bool is_awaiting_voxels = false;
         bool is_awaiting_mesh = false;
-        bool should_cull = true;
         bool in_processing = false;
     } ChunkCacheEntry;
 
