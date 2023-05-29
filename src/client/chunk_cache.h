@@ -34,6 +34,10 @@ namespace chunk_cache {
         bool is_awaiting_voxels = false;
         bool is_awaiting_mesh = false;
         bool in_processing = false;
+
+		~ChunkCacheEntry() {
+			delete chunk_data;
+		}
     } ChunkCacheEntry;
 
     namespace {

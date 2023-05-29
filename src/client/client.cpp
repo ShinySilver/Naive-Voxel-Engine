@@ -89,7 +89,7 @@ namespace client {
             font->setRatio(width, height);
         }
 
-        std::vector<Worker *> workers;
+        std::vector<std::unique_ptr<Worker>> workers;
         std::vector<Entity *> loaded_entities;
     }
 
@@ -119,8 +119,7 @@ namespace client {
          * Starting workers
          */
         LOG_S(1) << "Client starting its worker threads....";
-        workers = std::vector<Worker *>();
-        workers.emplace_back(new Worker("main_client_worker", chunk_loading::main_worker_tick));
+        workers.emplace_back(std::make_unique<Worker>("main_client_worker", chunk_loading::main_worker_tick));
         for (int i = 0; i < CLIENT_SECONDARY_WORKER_THREAD_NUMBER; ++i) {
             std::stringstream name;
             name << "client_worker_" << i + 1;
@@ -370,13 +369,12 @@ namespace client {
          * Sync with client workers
          */
         LOG_S(1) << "Unlocking preloading queue. Waiting for client workers to stop...";
-        for (int i = 0; i < 3; ++i) {
-            workers[i]->stop();
+        for (auto& worker : workers) {
+            worker->stop();
         }
         chunk_loading::preloading_queue.unlock_all();
-        for (int i = 0; i < 3; ++i) {
-            workers[i]->join();
-            delete workers[i];
+        for (auto& worker : workers) {
+            worker->join();
         }
     }
 }

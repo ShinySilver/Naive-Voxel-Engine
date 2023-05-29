@@ -18,7 +18,7 @@ namespace chunk_loading {
     SafeQueue<ChunkCacheEntry *> preloading_queue;
     SafeQueue<Entity *> loading_queue;
     SafeQueue<Entity *> unloading_queue;
-    SafeQueue<ChunkPos *> cascading_loading_queue;
+    SafeQueue<std::shared_ptr<ChunkPos>> cascading_loading_queue;
 
     void init() {}
 
@@ -72,12 +72,12 @@ namespace chunk_loading {
                             entry->chunk_data = new_chunk;
                             entry->is_awaiting_mesh = true;
                             entry->is_awaiting_voxels = false;
-                            cascading_loading_queue.enqueue(new ChunkPos(entry->position));
+                            cascading_loading_queue.enqueue(std::make_shared<ChunkPos>(entry->position));
                             preloading_queue.enqueue(entry);
                         } else {
                             entry->is_air = true;
                             entry->is_awaiting_voxels = false;
-                            cascading_loading_queue.enqueue(new ChunkPos(entry->position));
+                            cascading_loading_queue.enqueue(std::make_shared<ChunkPos>(entry->position));
                             entry->in_processing = false;
                         }
                     });
@@ -85,10 +85,9 @@ namespace chunk_loading {
             }
         }
 
-        ChunkPos *pos;
         int queue_size = cascading_loading_queue.size();
         for (int i = 0; i < queue_size; i++) {
-            pos = cascading_loading_queue.dequeue();
+            auto pos = cascading_loading_queue.dequeue();
 
             // First, we don't try to propagate worldgen from outside the soft view distance
             glm::vec3 dist_to_player = *pos - new_pos;

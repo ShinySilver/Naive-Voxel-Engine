@@ -27,6 +27,7 @@ namespace server{
             }
             LOG_S(INFO) << "Server shutting down";
             server_networking::stop();
+			server_networking::join();
         }
     }
 
@@ -48,6 +49,5 @@ namespace server{
         if(s.joinable()){
             s.join();
         }
-        server_networking::join();
     }
 }

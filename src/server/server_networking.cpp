@@ -21,17 +21,17 @@ namespace server_networking {
             ChunkGenRequest(glm::vec3 cell_coordinate,
                             std::function<void(Chunk *chunk)> callback) : cell_coordinate(cell_coordinate),
                                                                           callback(callback) {}
+			~ChunkGenRequest() = default;
         };
 
         std::vector<Worker *> workers;
-        SafeQueue<ChunkGenRequest *> generation_queue;
+        SafeQueue<std::shared_ptr<ChunkGenRequest>> generation_queue;
 
         void worker_tick() {
-            ChunkGenRequest *e = generation_queue.dequeue();
+            auto e = generation_queue.dequeue();
             if (e) {
                 Chunk *c = generator::generate(e->cell_coordinate); // TODO: refactor chunk creation
                 e->callback(c);
-                delete(e);
             }
         }
     }
@@ -62,7 +62,8 @@ namespace server_networking {
 
     void queue_chunk_generation_request(const glm::vec3 cell_coordinate,
                                         std::function<void(Chunk *chunk)> callback) {
-        generation_queue.enqueue(new ChunkGenRequest(cell_coordinate, callback)); // TODO: check C++11 for move
+        generation_queue.enqueue(std::make_shared<ChunkGenRequest>(cell_coordinate, callback)); // TODO: check C++11 for move
     }
+
 
 }
