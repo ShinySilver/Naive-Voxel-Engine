@@ -325,11 +325,11 @@ namespace client {
          * Sync with client workers
          */
         LOG_S(1) << "Unlocking preloading queue. Waiting for client workers to stop...";
-        for (int i = 0; i < 3; ++i) {
+        for (int i = 0; i <= CLIENT_SECONDARY_WORKER_THREAD_NUMBER; ++i) {
             workers[i]->stop();
         }
         chunk_loading::preloading_queue.unlock_all();
-        for (int i = 0; i < 3; ++i) {
+        for (int i = 0; i <= CLIENT_SECONDARY_WORKER_THREAD_NUMBER; ++i) {
             workers[i]->join();
             delete workers[i];
         }

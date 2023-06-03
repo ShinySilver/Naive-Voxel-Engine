@@ -12,9 +12,9 @@
 #define VIEW_DISTANCE 6
 #define TICK_DISTANCE 4
 #define CLIENT_SECONDARY_WORKER_THREAD_NUMBER 10
-#define KEEP_CHUNKS_DATA_IN_MEMORY true
+#define KEEP_CHUNKS_DATA_IN_MEMORY false
 #define MINECRAFT_LIKE_CAMERA true
-#define ALLOW_DEBUG_STATS false
+#define ALLOW_DEBUG_STATS true
 
 namespace client {
     void tick();
