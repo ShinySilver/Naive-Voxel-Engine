@@ -10,14 +10,14 @@
 
 #include "context.h"
 #include "camera.h"
-#include "../server/world.h"
+#include "../server/worldgen/world.h"
 #include "../common/utils/worker.h"
 #include "../common/utils/safe_queue.h"
-#include "client_networking.h"
-#include "chunk_loading.h"
+#include "workers/chunk_loading.h"
 #include "utils/colors.h"
 #include "utils/shader/text_renderer.h"
-
+#include "../common/utils/stats.h"
+#include "ui/debug_screen.h"
 #include <sstream>
 
 namespace client {
@@ -94,7 +94,6 @@ namespace client {
     }
 
     void tick() {
-
         LOG_S(INFO) << "Client starting!";
 
         /**
@@ -111,7 +110,7 @@ namespace client {
         font = &debug_font;
 
         /**
-         * Initializing chunk loading around the camera
+         * Initializing chunk loading
          */
         chunk_loading::init();
 
@@ -135,16 +134,11 @@ namespace client {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
         /**
-         * Stats
+         * Clocks for stats
          */
-        int chunk_unloaded_this_tick, chunk_loaded_this_tick, chunk_loaded = 0;
-        double avg_time_spent_loading_entities = 0, avg_time_spent_unloading_entities = 0,
-                avg_time_spent_rendering_entities = 0, time_spent_rendering_entities_this_tick,
-                avg_time_spent_ticking_entities = 0, time_spent_ticking_entities_this_tick,
-                avg_time_spent_waiting_for_entity_sync = 0, time_spent_waiting_for_entity_sync_this_tick;
-        double avg_time_spent_handling_inputs = 0, avg_time_spent_rendering_ui = 0, avg_time_spent_updating_camera = 0;
-        double avg_frame_duration = 0, avg_time_spent_waiting_for_gpu = 0;
-        clock_t t0, t1 = clock();
+        #if ALLOW_DEBUG_STATS
+        clock_t t0, t1;
+        #endif
 
         /**
          * Render loop!
@@ -152,17 +146,23 @@ namespace client {
         LOG_S(1) << "Client ticking!";
         while (!glfwWindowShouldClose(window)) {
 
+            #if ALLOW_DEBUG_STATS
             t1 = clock();
+            #endif
 
             /**
              * Adding to the scene entities waiting in the loading queue
              */
             Entity *tmp;
+            #if ALLOW_DEBUG_STATS
             t0 = clock();
-            chunk_loaded_this_tick = 0;
+            stats::chunk_loaded_this_tick = 0;
+            #endif
             while (!chunk_loading::loading_queue.empty()) {
-                chunk_loaded++;
-                chunk_loaded_this_tick++;
+                #if ALLOW_DEBUG_STATS
+                stats::chunk_loaded++;
+                stats::chunk_loaded_this_tick++;
+                #endif
                 tmp = chunk_loading::loading_queue.dequeue();
                 tmp->load();
                 loaded_entities.emplace_back(tmp);
@@ -176,17 +176,24 @@ namespace client {
                           << tmp->getLocation().position.y << ";"
                           << tmp->getLocation().position.z << "";
             }
-            avg_time_spent_loading_entities = avg_time_spent_loading_entities * 0.99 + 0.01 * (clock() - t0);
+            #if ALLOW_DEBUG_STATS
+            stats::avg_time_spent_loading_entities =
+                    stats::avg_time_spent_loading_entities * 0.99 + 0.01 * (clock() - t0);
+            #endif
 
             /**
              * Removing the entities waiting in the unloading queue
              */
-            chunk_unloaded_this_tick = 0;
+            #if ALLOW_DEBUG_STATS
+            stats::chunk_unloaded_this_tick = 0;
             t0 = clock();
+            #endif
             while (!chunk_loading::unloading_queue.empty()) {
                 // Updating statistics
-                chunk_loaded--;
-                chunk_unloaded_this_tick++;
+                #if ALLOW_DEBUG_STATS
+                stats::chunk_loaded--;
+                stats::chunk_unloaded_this_tick++;
+                #endif
 
                 // Unloading chunks
                 tmp = chunk_loading::unloading_queue.dequeue();
@@ -210,155 +217,103 @@ namespace client {
                 // Actually freeing the chunk
                 delete (tmp); // TODO: think about chunk serialization.
             }
-            avg_time_spent_unloading_entities = avg_time_spent_unloading_entities * 0.99 + 0.01 * (clock() - t0);
+
+            #if ALLOW_DEBUG_STATS
+            stats::avg_time_spent_unloading_entities =
+                    stats::avg_time_spent_unloading_entities * 0.99 + 0.01 * (clock() - t0);
+            #endif
 
             /**
              * Handling camera and inputs
              */
+            #if ALLOW_DEBUG_STATS
             t0 = clock();
+            #endif
+
             camera::updateControlling(window);
             glfwPollEvents();
-            avg_time_spent_handling_inputs = avg_time_spent_handling_inputs * 0.99 + 0.01 * (clock() - t0);
 
+            #if ALLOW_DEBUG_STATS
+            stats::avg_time_spent_handling_inputs =
+                    stats::avg_time_spent_handling_inputs * 0.99 + 0.01 * (clock() - t0);
             t0 = clock();
+            #endif
+
             camera::updateView(window, _projectionMatrix, _viewMatrix);
             _matrix = _projectionMatrix * _viewMatrix;
-            avg_time_spent_updating_camera = avg_time_spent_updating_camera * 0.99 + 0.01 * (clock() - t0);
+
+            #if ALLOW_DEBUG_STATS
+            stats::avg_time_spent_updating_camera =
+                    stats::avg_time_spent_updating_camera * 0.99 + 0.01 * (clock() - t0);
+            #endif
 
             /**
              * Rendering entities
              */
+            #if ALLOW_DEBUG_STATS
             t0 = clock();
+            #endif
+
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            avg_time_spent_waiting_for_gpu = avg_time_spent_waiting_for_gpu * 0.99 + 0.01 * (clock() - t0);
 
-            time_spent_waiting_for_entity_sync_this_tick = 0;
-            time_spent_ticking_entities_this_tick = 0;
-            time_spent_rendering_entities_this_tick = 0;
+            #if ALLOW_DEBUG_STATS
+            stats::avg_time_spent_waiting_for_gpu =
+                    stats::avg_time_spent_waiting_for_gpu * 0.99 + 0.01 * (clock() - t0);
+            stats::time_spent_waiting_for_entity_sync_this_tick = 0;
+            stats::time_spent_ticking_entities_this_tick = 0;
+            stats::time_spent_rendering_entities_this_tick = 0;
+            #endif
+
             for (auto const entity: loaded_entities) {
+                #if ALLOW_DEBUG_STATS
                 t0 = clock();
+                #endif
+
                 entity->lock();
-                time_spent_waiting_for_entity_sync_this_tick += clock() - t0;
 
+                #if ALLOW_DEBUG_STATS
+                stats::time_spent_waiting_for_entity_sync_this_tick += clock() - t0;
                 t0 = clock();
+                #endif
+
                 entity->fastUpdate();
-                time_spent_ticking_entities_this_tick += clock() - t0;
 
+                #if ALLOW_DEBUG_STATS
+                stats::time_spent_ticking_entities_this_tick += clock() - t0;
                 t0 = clock();
+                #endif
+
                 entity->draw(_matrix, glm::vec3(100.0, 100.0, 100.0), camera::get_location().position);
-                time_spent_rendering_entities_this_tick += clock() - t0;
+
+                #if ALLOW_DEBUG_STATS
+                stats::time_spent_rendering_entities_this_tick += clock() - t0;
+                #endif
 
                 entity->unlock();
             }
-            avg_time_spent_waiting_for_entity_sync = avg_time_spent_waiting_for_entity_sync * 0.99
-                                                     + 0.01 * time_spent_waiting_for_entity_sync_this_tick;
-            avg_time_spent_ticking_entities = avg_time_spent_ticking_entities * 0.99
-                                              + 0.01 * time_spent_ticking_entities_this_tick;
-            avg_time_spent_rendering_entities = avg_time_spent_rendering_entities * 0.99
-                                                + 0.01 * time_spent_rendering_entities_this_tick;
 
+            #if ALLOW_DEBUG_STATS
+            stats::avg_time_spent_waiting_for_entity_sync = stats::avg_time_spent_waiting_for_entity_sync * 0.99 +
+                                                            0.01 * stats::time_spent_waiting_for_entity_sync_this_tick;
+            stats::avg_time_spent_ticking_entities = stats::avg_time_spent_ticking_entities * 0.99
+                                                     + 0.01 * stats::time_spent_ticking_entities_this_tick;
+            stats::avg_time_spent_rendering_entities = stats::avg_time_spent_rendering_entities * 0.99
+                                                       + 0.01 * stats::time_spent_rendering_entities_this_tick;
+            #endif
             /**
              * If enabled by pressing F3, we are showing some debug info
-             * TODO: replace this interface with one made with a nice library, and unlock the mouse with left alt.
              */
             if (info_mode) {
-                t0 = clock();
-                debug_font.bind();
-                debug_font.renderText("iVy dev build ", 0.0125, 0.98, 0.4, colors::PINK);
-                debug_font.renderText(__DATE__ ", " __TIME__, 0.0125, 0.95, 0.4, colors::PINK);
-
-                Location l = camera::get_location();
-                std::stringstream ss;
-                ss << "X=" << std::fixed << std::setprecision(3) << l.position.x;
-                ss << " Y=" << std::fixed << std::setprecision(3) << l.position.y;
-                ss << " Z=" << std::fixed << std::setprecision(3) << l.position.z;
-                debug_font.renderText(ss.str(), 0.0125, 0.91, 0.4, colors::WHITE);
-
-                ss = std::stringstream();
-                ss << "RX=" << std::fixed << std::setprecision(3) << l.rotation.x;
-                ss << " RY=" << std::fixed << std::setprecision(3) << l.rotation.y;
-                ss << " RZ=" << std::fixed << std::setprecision(3) << l.rotation.z;
-                debug_font.renderText(ss.str(), 0.0125, 0.88, 0.4, colors::WHITE);
-
-                debug_font.renderText("chunks_loaded=" + std::to_string(chunk_loaded),
-                                      0.0125, 0.84, 0.4, colors::WHITE);
-                debug_font.renderText("chunks_loaded_this_tick=" + std::to_string(chunk_loaded_this_tick),
-                                      0.0125, 0.81, 0.4, colors::WHITE);
-                debug_font.renderText("chunks_unloaded_this_tick=" + std::to_string(chunk_unloaded_this_tick),
-                                      0.0125, 0.78, 0.4, colors::WHITE);
-
-                debug_font.renderText(
-                        "avg_time_spent_loading_entities=" +
-                        std::to_string(int(round(avg_time_spent_loading_entities / CLOCKS_PER_SEC * 1000000))) + " us",
-                        0.0125, 0.74, 0.4, colors::WHITE);
-                debug_font.renderText(
-                        "avg_time_spent_unloading_entities=" +
-                        std::to_string(int(round(avg_time_spent_unloading_entities / CLOCKS_PER_SEC * 1000000))) +
-                        " us",
-                        0.0125, 0.71, 0.4, colors::WHITE);
-                debug_font.renderText("avg_time_spent_waiting_for_entity_sync=" +
-                                      std::to_string(int(round(
-                                              avg_time_spent_waiting_for_entity_sync / CLOCKS_PER_SEC * 1000000))) +
-                                      " us",
-                                      0.0125, 0.68, 0.4, colors::WHITE);
-                debug_font.renderText(
-                        "avg_time_spent_handling_inputs=" +
-                        std::to_string(int(round(avg_time_spent_handling_inputs / CLOCKS_PER_SEC * 1000000))) + " us",
-                        0.0125, 0.65, 0.4, colors::WHITE);
-                debug_font.renderText(
-                        "avg_time_spent_updating_camera=" +
-                        std::to_string(int(round(avg_time_spent_updating_camera / CLOCKS_PER_SEC * 1000000))) + " us",
-                        0.0125, 0.62, 0.4, colors::WHITE);
-
-                debug_font.renderText("avg_time_spent_rendering_ui=" +
-                                      std::to_string(int(round(avg_time_spent_rendering_ui / CLOCKS_PER_SEC * 1000))) +
-                                      " ms",
-                                      0.0125, 0.58, 0.4, colors::WHITE);
-                debug_font.renderText(
-                        "avg_time_spent_rendering_entities=" +
-                        std::to_string(int(round(avg_time_spent_rendering_entities / CLOCKS_PER_SEC * 1000))) + " ms",
-                        0.0125, 0.55, 0.4, colors::WHITE);
-                debug_font.renderText(
-                        "avg_time_spent_ticking_entities=" +
-                        std::to_string(int(round(avg_time_spent_ticking_entities / CLOCKS_PER_SEC * 1000))) + " ms",
-                        0.0125, 0.52, 0.4, colors::WHITE);
-
-                debug_font.renderText(
-                        "avg_time_spent_waiting_for_gpu=" +
-                        std::to_string(int(round(avg_time_spent_waiting_for_gpu / CLOCKS_PER_SEC * 1000))) + " ms",
-                        0.0125, 0.49, 0.4, colors::WHITE);
-                debug_font.renderText(
-                        "avg_total_frame_duration=" +
-                        std::to_string(int(round(avg_frame_duration / CLOCKS_PER_SEC * 1000))) + " ms / "
-                        +std::to_string(int(round(1/(avg_frame_duration / CLOCKS_PER_SEC))))+" FPS",
-                        0.0125, 0.46, 0.4, colors::PINK);
-
-                debug_font.renderText(
-                        "loading_queue_size=" +
-                        std::to_string(chunk_loading::loading_queue.size()) + " entities",
-                        0.0125, 0.42, 0.4, colors::WHITE);
-                debug_font.renderText(
-                        "unloading_queue_size=" +
-                        std::to_string(chunk_loading::unloading_queue.size()) + " entities",
-                        0.0125, 0.39, 0.4, colors::WHITE);
-
-                debug_font.renderText(
-                        "preloading_queue_size=" +
-                        std::to_string(chunk_loading::preloading_queue.size()) + " cache entries",
-                        0.0125, 0.35, 0.4, colors::WHITE);
-                debug_font.renderText(
-                        "cascading_loading_queue_size=" +
-                        std::to_string(chunk_loading::cascading_loading_queue.size()) + " cache entries",
-                        0.0125, 0.32, 0.4, colors::WHITE);
-                debug_font.unbind();
-                avg_time_spent_rendering_ui = avg_time_spent_rendering_ui * 0.99 + 0.01 * (clock() - t0);
+                debug_screen::render(debug_font);
             }
 
             /**
              * Swapping buffers!
              */
             glfwSwapBuffers(window);
-            avg_frame_duration = avg_frame_duration * 0.99 + 0.01 * (clock() - t1);
+            #if ALLOW_DEBUG_STATS
+            stats::avg_frame_duration = stats::avg_frame_duration * 0.99 + 0.01 * (clock() - t1);
+            #endif
         }
 
         /**

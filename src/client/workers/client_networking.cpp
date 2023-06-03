@@ -4,8 +4,8 @@
 
 #include <functional>
 #include "client_networking.h"
-#include "../server/world.h"
-#include "../server/server_networking.h"
+#include "../../server/worldgen/world.h"
+#include "../../server/workers/server_networking.h"
 #include "chunk_loading.h"
 
 namespace client_networking {

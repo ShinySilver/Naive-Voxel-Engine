@@ -7,10 +7,10 @@
 
 #include <bits/stdc++.h>
 #include "glm/glm/vec3.hpp"
-#include "../common/utils/positioning.h"
-#include "../common/entities/entity_chunk.h"
-#include "utils/meshing/mesh.h"
-#include "client.h"
+#include "../../common/utils/positioning.h"
+#include "../../common/entities/entity_chunk.h"
+#include "meshing/mesh.h"
+#include "../client.h"
 
 #define CACHE_BORDER_SIZE 1
 #define CACHE_WIDTH ((VIEW_DISTANCE + CACHE_BORDER_SIZE) * 2 + 1)

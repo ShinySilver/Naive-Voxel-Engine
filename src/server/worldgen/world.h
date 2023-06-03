@@ -7,7 +7,7 @@
 
 #include <bits/stdc++.h>
 #include <vector>
-#include "../common/entities/entity.h"
+#include "../../common/entities/entity.h"
 
 namespace world {
 

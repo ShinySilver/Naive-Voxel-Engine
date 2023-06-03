@@ -5,8 +5,8 @@
 #ifndef IVY_GENERATOR_H
 #define IVY_GENERATOR_H
 
-#include "../common/entities/entity.h"
-#include "../client/utils/meshing/mesh.h"
+#include "../../common/entities/entity.h"
+#include "../../client/utils/meshing/mesh.h"
 
 namespace generator {
     /**

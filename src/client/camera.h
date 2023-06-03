@@ -8,8 +8,8 @@
 #ifndef IVY_CAMERA_H_
 #define IVY_CAMERA_H_
 
-#include <GLFW/glfw3.h>
-#include <glm/glm/ext/matrix_float4x4.hpp>
+#include "GLFW/glfw3.h"
+#include "glm/glm/ext/matrix_float4x4.hpp"
 #include "../common/utils/positioning.h"
 
 namespace camera {

@@ -7,7 +7,7 @@
 
 
 #include <functional>
-#include "../common/entities/entity.h"
+#include "../../common/entities/entity.h"
 
 #define GENERATION_WORKER_COUNT 3
 

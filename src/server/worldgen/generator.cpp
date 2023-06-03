@@ -3,14 +3,11 @@
 //
 
 #include <vector>
-#include <glm/glm/gtc/noise.hpp>
+#include "glm/glm/gtc/noise.hpp"
 #include "generator.h"
-#include "../client/utils/meshing/greedy_mesher.h"
-#include "../common/world/chunk.h"
-#include "../common/world/voxels.h"
-#include "../common/entities/entity_chunk.h"
+#include "../../client/utils/meshing/greedy_mesher.h"
+#include "../../common/world/voxels.h"
 
-#define UNDER_CULLING_RATE 1
 #define SIMPLEX_1_WIDTH 256.0f
 #define SIMPLEX_1_HEIGHT 128
 #define TERRAIN_OFFSET (-256)

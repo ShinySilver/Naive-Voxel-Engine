@@ -5,11 +5,12 @@
 #include "client_networking.h"
 #include "chunk_loading.h"
 #include "loguru.hpp"
-#include "camera.h"
-#include "client.h"
-#include "chunk_cache.h"
-#include "utils/meshing/greedy_mesher.h"
-#include "../common/utils/direction.h"
+#include "../camera.h"
+#include "../client.h"
+#include "../utils/chunk_cache.h"
+#include "../utils/meshing/greedy_mesher.h"
+#include "../../common/utils/direction.h"
+#include "../../common/utils/stats.h"
 
 namespace chunk_loading {
 
@@ -33,9 +34,9 @@ namespace chunk_loading {
 
         ChunkCacheEntry *entry;
         ChunkPos p;
-        for (int dx = -VIEW_DISTANCE-1; dx <= VIEW_DISTANCE+1; ++dx) {
-            for (int dy = -VIEW_DISTANCE-1; dy <= VIEW_DISTANCE+1; ++dy) {
-                for (int dz = -VIEW_DISTANCE-1; dz <= VIEW_DISTANCE+1; ++dz) {
+        for (int dx = -VIEW_DISTANCE - 1; dx <= VIEW_DISTANCE + 1; ++dx) {
+            for (int dy = -VIEW_DISTANCE - 1; dy <= VIEW_DISTANCE + 1; ++dy) {
+                for (int dz = -VIEW_DISTANCE - 1; dz <= VIEW_DISTANCE + 1; ++dz) {
                     p = {new_pos.x + dx, new_pos.y + dy, new_pos.z + dz};
                     entry = chunk_cache::get_cache_entry(p);
 
@@ -48,10 +49,11 @@ namespace chunk_loading {
                     if (entry->entity != nullptr) {
                         unloading_queue.enqueue(entry->entity);
                         entry->entity = nullptr;
+                        entry->position = ChunkPos{FLT_MAX};
                     }
 
                     // Not loading chunk that are marked as culled (aside from the player's chunk)
-                    if (entry->last_valid_pos != p && !(!dx && !dy && !dz)) {
+                    if (entry->last_valid_pos != p && entry->position != p && !(!dx && !dy && !dz)) {
                         continue;
                     }
 
@@ -65,10 +67,10 @@ namespace chunk_loading {
 
                     // At last, we add it to the world gen queue without creating an entity yet - it might be air!
                     entry->in_processing = true;
+                    clock_t t0 = clock();
                     client_networking::load_cell_async(entry->position, [entry](Chunk *new_chunk) {
                         if (new_chunk != nullptr) {
                             entry->is_air = false;
-
                             entry->chunk_data = new_chunk;
                             entry->is_awaiting_mesh = true;
                             entry->is_awaiting_voxels = false;
@@ -116,11 +118,16 @@ namespace chunk_loading {
                       << entry->position.x << ";"
                       << entry->position.y << ";"
                       << entry->position.z << "";
+            clock_t t0 = clock();
             Mesh *mesh = GreedyMesher::mesh(*entry->chunk_data, nullptr);
-#if KEEP_CHUNKS_DATA_IN_MEMORY == false
+            #if ALLOW_DEBUG_STATS
+            stats::total_chunk_meshing_time+=clock()-t0;
+            stats::total_chunk_meshed+=1;
+            #endif
+            #if not KEEP_CHUNKS_DATA_IN_MEMORY
             delete (entry->chunk_data);
             entry->chunk_data = nullptr;
-#endif
+            #endif
             if (entry->entity != nullptr) {
                 unloading_queue.enqueue((Entity *) entry->entity);
             }

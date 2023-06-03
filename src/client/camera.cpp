@@ -9,9 +9,9 @@
 #include "client.h"
 #include "../common/utils/positioning.h"
 
-#include <GLFW/glfw3.h>
-#include <glm/glm/vec3.hpp>
-#include <glm/glm/ext/matrix_transform.hpp>
+#include "GLFW/glfw3.h"
+#include "glm/glm/vec3.hpp"
+#include "glm/glm/ext/matrix_transform.hpp"
 
 #include <cmath>
 #include <mutex>

@@ -6,9 +6,9 @@
 #define IVY_CHUNK_LOADING_H
 
 
-#include "../common/utils/safe_queue.h"
-#include "../common/entities/entity.h"
-#include "chunk_cache.h"
+#include "../../common/utils/safe_queue.h"
+#include "../../common/entities/entity.h"
+#include "../utils/chunk_cache.h"
 
 namespace chunk_loading {
 

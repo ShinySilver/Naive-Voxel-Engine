@@ -4,13 +4,14 @@
 
 #include <iostream>
 #include "server_networking.h"
-#include "../common/utils/safe_queue.h"
-#include "../common/utils/worker.h"
-#include "../common/entities/entity.h"
+#include "../../common/utils/safe_queue.h"
+#include "../../common/utils/worker.h"
+#include "../../common/entities/entity.h"
 #include "glm/glm/vec3.hpp"
-#include "world.h"
-#include "generator.h"
+#include "../worldgen/world.h"
+#include "../worldgen/generator.h"
 #include "loguru.hpp"
+#include "../../common/utils/stats.h"
 
 namespace server_networking {
     namespace {
@@ -29,9 +30,16 @@ namespace server_networking {
         void worker_tick() {
             ChunkGenRequest *e = generation_queue.dequeue();
             if (e) {
+                clock_t t0 = clock();
                 Chunk *c = generator::generate(e->cell_coordinate); // TODO: refactor chunk creation
+                if (c) {
+                    #if ALLOW_DEBUG_STATS
+                    stats::total_chunk_generation_time += clock() - t0;
+                    stats::total_chunk_generated += 1;
+                    #endif
+                }
                 e->callback(c);
-                delete(e);
+                delete (e);
             }
         }
     }
@@ -62,7 +70,7 @@ namespace server_networking {
 
     void queue_chunk_generation_request(const glm::vec3 cell_coordinate,
                                         std::function<void(Chunk *chunk)> callback) {
-        generation_queue.enqueue(new ChunkGenRequest(cell_coordinate, callback)); // TODO: check C++11 for move
+        generation_queue.enqueue(new ChunkGenRequest(cell_coordinate, callback));
     }
 
 }

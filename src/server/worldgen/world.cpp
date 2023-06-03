@@ -5,8 +5,6 @@
 #include "generator.h"
 #include "world.h"
 
-#define TICK_RANGE 64
-#define VIEW_RANGE 128
 
 namespace world {
     namespace {

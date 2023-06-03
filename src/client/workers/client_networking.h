@@ -6,7 +6,7 @@
 #define IVY_CLIENT_NETWORKING_H
 
 #include <functional>
-#include "chunk_cache.h"
+#include "../utils/chunk_cache.h"
 
 namespace client_networking {
     /**
