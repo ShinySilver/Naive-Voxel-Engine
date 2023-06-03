@@ -6,7 +6,7 @@
 #define IVY_CLIENT_NETWORKING_H
 
 #include <functional>
-#include "chunk_cache.h"
+#include "../utils/chunk_cache.h"
 
 namespace client_networking {
     /**
@@ -22,20 +22,12 @@ namespace client_networking {
     void unload_cell(const Entity *entity);
 
     /**
-     * Use placement new to load a chunk in the given allocation, then run the callback with it.
+     * Ask the server for some worldgen. When it's done, run the callback with it.
      * @param cell_coordinate
-     * @param entity
      * @param callback
      * @deprecated
      */
-    void load_cell_async(const glm::vec3 cell_coordinate, Entity *entity, std::function<void(Entity *cell)> callback);
-
-    /**
-     * Ask the server for some worldgen. when it's done, add it to the cache, update it & its neighbour, and eventually
-     * add one or multiple of 'em to the meshing queue.
-     * @param pEntry
-     */
-    void fill_chunk_cache_entry(chunk_cache::ChunkCacheEntry *cache_entry);
+    void load_cell_async(const glm::vec3 cell_coordinate, std::function<void(Chunk *cell)> callback);
 };
 
 

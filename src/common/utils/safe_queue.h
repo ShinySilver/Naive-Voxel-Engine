@@ -46,7 +46,7 @@ public:
         }
         T val = q.front();
         q.pop();
-        return val;
+        return std::move(val);
     }
 
     inline bool empty(){

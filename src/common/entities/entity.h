@@ -95,8 +95,6 @@ protected:
     Location _location;
     glm::vec3 _extraPosition, _extraRotation;
 
-    glm::mat3 _normal_matrix;
-
 private:
     std::mutex _mutex, _soft_mutex;
     int _use_count;

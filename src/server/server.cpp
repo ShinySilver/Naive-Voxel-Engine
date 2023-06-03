@@ -7,8 +7,8 @@
 #include <loguru.hpp>
 
 #include "server.h"
-#include "world.h"
-#include "server_networking.h"
+#include "worldgen/world.h"
+#include "workers/server_networking.h"
 
 #include <atomic>
 #include <thread>

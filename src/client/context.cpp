@@ -87,6 +87,9 @@ namespace context {
         glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE); // Ensure we can capture the escape key being pressed below
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Hide the mouse and enable unlimited mouvement
 #endif
+#if WIN_VSYNC
+        glfwSwapInterval(0);
+#endif
         glfwPollEvents();
         glfwSetCursorPos(window, WIN_WIDTH / 2, WIN_HEIGHT / 2);
 

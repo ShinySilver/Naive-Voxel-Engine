@@ -10,14 +10,14 @@
 
 #include "context.h"
 #include "camera.h"
-#include "../server/world.h"
+#include "../server/worldgen/world.h"
 #include "../common/utils/worker.h"
 #include "../common/utils/safe_queue.h"
-#include "client_networking.h"
-#include "chunk_loading.h"
+#include "workers/chunk_loading.h"
 #include "utils/colors.h"
 #include "utils/shader/text_renderer.h"
-
+#include "../common/utils/stats.h"
+#include "ui/debug_screen.h"
 #include <sstream>
 
 namespace client {
@@ -94,7 +94,6 @@ namespace client {
     }
 
     void tick() {
-
         LOG_S(INFO) << "Client starting!";
 
         /**
@@ -107,11 +106,11 @@ namespace client {
          * Some ugly hacks for the text renderer
          */
         TextRenderer debug_font = TextRenderer("resources/fonts/arial.ttf", 1,
-                       1, WIN_WIDTH, WIN_HEIGHT);
+                                               1, WIN_WIDTH, WIN_HEIGHT);
         font = &debug_font;
 
         /**
-         * Initializing chunk loading around the camera
+         * Initializing chunk loading
          */
         chunk_loading::init();
 
@@ -135,9 +134,11 @@ namespace client {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
         /**
-         * Stats
+         * Clocks for stats
          */
-        int chunk_unloaded_this_tick, chunk_loaded_this_tick, chunk_loaded = 0;
+        #if ALLOW_DEBUG_STATS
+        clock_t t0, t1;
+        #endif
 
         /**
          * Render loop!
@@ -145,14 +146,23 @@ namespace client {
         LOG_S(1) << "Client ticking!";
         while (!glfwWindowShouldClose(window)) {
 
+            #if ALLOW_DEBUG_STATS
+            t1 = clock();
+            #endif
+
             /**
              * Adding to the scene entities waiting in the loading queue
              */
             Entity *tmp;
-            chunk_loaded_this_tick = 0;
+            #if ALLOW_DEBUG_STATS
+            t0 = clock();
+            stats::chunk_loaded_this_tick = 0;
+            #endif
             while (!chunk_loading::loading_queue.empty()) {
-                chunk_loaded++;
-                chunk_loaded_this_tick++;
+                #if ALLOW_DEBUG_STATS
+                stats::chunk_loaded++;
+                stats::chunk_loaded_this_tick++;
+                #endif
                 tmp = chunk_loading::loading_queue.dequeue();
                 tmp->load();
                 loaded_entities.emplace_back(tmp);
@@ -166,15 +176,24 @@ namespace client {
                           << tmp->getLocation().position.y << ";"
                           << tmp->getLocation().position.z << "";
             }
+            #if ALLOW_DEBUG_STATS
+            stats::avg_time_spent_loading_entities =
+                    stats::avg_time_spent_loading_entities * 0.99 + 0.01 * (clock() - t0);
+            #endif
 
             /**
              * Removing the entities waiting in the unloading queue
              */
-            chunk_unloaded_this_tick = 0;
+            #if ALLOW_DEBUG_STATS
+            stats::chunk_unloaded_this_tick = 0;
+            t0 = clock();
+            #endif
             while (!chunk_loading::unloading_queue.empty()) {
                 // Updating statistics
-                chunk_loaded--;
-                chunk_unloaded_this_tick++;
+                #if ALLOW_DEBUG_STATS
+                stats::chunk_loaded--;
+                stats::chunk_unloaded_this_tick++;
+                #endif
 
                 // Unloading chunks
                 tmp = chunk_loading::unloading_queue.dequeue();
@@ -196,63 +215,105 @@ namespace client {
                           << tmp->getLocation().position.z << "";
 
                 // Actually freeing the chunk
-                delete(tmp); // TODO: think about chunk serialization.
+                delete (tmp); // TODO: think about chunk serialization.
             }
+
+            #if ALLOW_DEBUG_STATS
+            stats::avg_time_spent_unloading_entities =
+                    stats::avg_time_spent_unloading_entities * 0.99 + 0.01 * (clock() - t0);
+            #endif
 
             /**
              * Handling camera and inputs
              */
+            #if ALLOW_DEBUG_STATS
+            t0 = clock();
+            #endif
+
             camera::updateControlling(window);
+            glfwPollEvents();
+
+            #if ALLOW_DEBUG_STATS
+            stats::avg_time_spent_handling_inputs =
+                    stats::avg_time_spent_handling_inputs * 0.99 + 0.01 * (clock() - t0);
+            t0 = clock();
+            #endif
+
             camera::updateView(window, _projectionMatrix, _viewMatrix);
             _matrix = _projectionMatrix * _viewMatrix;
-            glfwPollEvents();
+
+            #if ALLOW_DEBUG_STATS
+            stats::avg_time_spent_updating_camera =
+                    stats::avg_time_spent_updating_camera * 0.99 + 0.01 * (clock() - t0);
+            #endif
 
             /**
              * Rendering entities
              */
+            #if ALLOW_DEBUG_STATS
+            t0 = clock();
+            #endif
+
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            #if ALLOW_DEBUG_STATS
+            stats::avg_time_spent_waiting_for_gpu =
+                    stats::avg_time_spent_waiting_for_gpu * 0.99 + 0.01 * (clock() - t0);
+            stats::time_spent_waiting_for_entity_sync_this_tick = 0;
+            stats::time_spent_ticking_entities_this_tick = 0;
+            stats::time_spent_rendering_entities_this_tick = 0;
+            #endif
+
             for (auto const entity: loaded_entities) {
+                #if ALLOW_DEBUG_STATS
+                t0 = clock();
+                #endif
+
                 entity->lock();
+
+                #if ALLOW_DEBUG_STATS
+                stats::time_spent_waiting_for_entity_sync_this_tick += clock() - t0;
+                t0 = clock();
+                #endif
+
                 entity->fastUpdate();
+
+                #if ALLOW_DEBUG_STATS
+                stats::time_spent_ticking_entities_this_tick += clock() - t0;
+                t0 = clock();
+                #endif
+
                 entity->draw(_matrix, glm::vec3(100.0, 100.0, 100.0), camera::get_location().position);
+
+                #if ALLOW_DEBUG_STATS
+                stats::time_spent_rendering_entities_this_tick += clock() - t0;
+                #endif
+
                 entity->unlock();
             }
 
+            #if ALLOW_DEBUG_STATS
+            stats::avg_time_spent_waiting_for_entity_sync = stats::avg_time_spent_waiting_for_entity_sync * 0.99 +
+                                                            0.01 * stats::time_spent_waiting_for_entity_sync_this_tick;
+            stats::avg_time_spent_ticking_entities = stats::avg_time_spent_ticking_entities * 0.99
+                                                     + 0.01 * stats::time_spent_ticking_entities_this_tick;
+            stats::avg_time_spent_rendering_entities = stats::avg_time_spent_rendering_entities * 0.99
+                                                       + 0.01 * stats::time_spent_rendering_entities_this_tick;
+            #endif
             /**
              * If enabled by pressing F3, we are showing some debug info
-             * TODO: replace this interface with one made with a nice library, and unlock the mouse with left alt.
              */
-            if(info_mode){
-                debug_font.bind();
-                debug_font.renderText("iVy dev build ", 0.0125, 0.98, 0.4, colors::WHITE);
-                debug_font.renderText(__DATE__ ", " __TIME__, 0.0125, 0.95, 0.4, colors::WHITE);
-
-                Location l = camera::get_location();
-                std::stringstream ss;
-                ss << "X=" << std::fixed << std::setprecision(3) << l.position.x;
-                ss << " Y=" << std::fixed << std::setprecision(3) << l.position.y;
-                ss << " Z=" << std::fixed << std::setprecision(3) << l.position.z;
-                debug_font.renderText(ss.str(),0.0125, 0.91, 0.4, colors::WHITE);
-
-                ss = std::stringstream();
-                ss << "RX=" << std::fixed << std::setprecision(3) << l.rotation.x;
-                ss << " RY=" << std::fixed << std::setprecision(3) << l.rotation.y;
-                ss << " RZ=" << std::fixed << std::setprecision(3) << l.rotation.z;
-                debug_font.renderText(ss.str(),0.0125, 0.88, 0.4, colors::WHITE);
-
-                debug_font.renderText("chunks_loaded="+std::to_string(chunk_loaded),
-                                      0.0125, 0.84, 0.4, colors::WHITE);
-                debug_font.renderText("chunks_loaded_this_tick="+std::to_string(chunk_loaded_this_tick),
-                                      0.0125, 0.81, 0.4, colors::WHITE);
-                debug_font.renderText("chunks_unloaded_this_tick="+std::to_string(chunk_unloaded_this_tick),
-                                      0.0125, 0.78, 0.4, colors::WHITE);
-                debug_font.unbind();
+            if (info_mode) {
+                debug_screen::render(debug_font);
             }
 
             /**
              * Swapping buffers!
              */
             glfwSwapBuffers(window);
+            #if ALLOW_DEBUG_STATS
+            stats::avg_frame_duration = stats::avg_frame_duration * 0.99 + 0.01 * (clock() - t1);
+            #endif
         }
 
         /**
@@ -264,11 +325,11 @@ namespace client {
          * Sync with client workers
          */
         LOG_S(1) << "Unlocking preloading queue. Waiting for client workers to stop...";
-        for (int i = 0; i < 3; ++i) {
+        for (int i = 0; i <= CLIENT_SECONDARY_WORKER_THREAD_NUMBER; ++i) {
             workers[i]->stop();
         }
         chunk_loading::preloading_queue.unlock_all();
-        for (int i = 0; i < 3; ++i) {
+        for (int i = 0; i <= CLIENT_SECONDARY_WORKER_THREAD_NUMBER; ++i) {
             workers[i]->join();
             delete workers[i];
         }

@@ -11,6 +11,7 @@
 #include <vector>
 #include "mesh.h"
 #include "greedy_mesher.h"
+#include "../../../common/world/voxels.h"
 
 #define CENTER_CHUNKS
 
@@ -100,7 +101,7 @@ namespace GreedyMesher {
         }
     } // End of private namespace
 
-    Mesh *mesh(Chunk &chunk) {
+    Mesh *mesh(Chunk &chunk, Chunk *neighbours) {
 
         Mesh *mesh = new Mesh();
 
@@ -119,7 +120,7 @@ namespace GreedyMesher {
          * We create a mask - this will contain the groups of matching voxel faces
          * as we proceed through the chunk in 6 directions - once for each face.
          */
-        Color *mask[CHUNK_WIDTH * CHUNK_HEIGHT]; // TODO: transfer this from the stack to the heap?
+        Color *mask[CHUNK_WIDTH * CHUNK_HEIGHT];
 
         /*
          * These are just working variables to hold two faces during comparison.
@@ -170,8 +171,9 @@ namespace GreedyMesher {
 
                 /*
                  * We move through the dimension from front to back
+                 * Previously, we had -1 -> CHUNK_WIDTH. We made the modification to remove chunk borders
                  */
-                for (x[d] = -1; x[d] < CHUNK_WIDTH;) {
+                for (x[d] = 0; x[d] < CHUNK_WIDTH-1;) {
 
                     /*
                      * -------------------------------------------------------------------

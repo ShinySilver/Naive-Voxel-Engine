@@ -9,6 +9,7 @@
 
 namespace colors{
     glm::vec3 WHITE{0.7,0.62,0.62};
+    glm::vec3 PINK{0.75,0.52,0.52};
 }
 
 #endif //IVY_COLORS_H

@@ -12,8 +12,6 @@
 #include "glad/glad.h"
 #endif
 
-#define CHUNK_SIZE 32
-
 #include "entity.h"
 #include "../../client/utils/meshing/mesh.h"
 
@@ -50,6 +48,7 @@ private:
     int verticeBufferSize = 0;
     Chunk *adjacent_chunks[6];
     Mesh *_mesh;
+    glm::mat3 _normal_matrix;
 };
 
 #endif /* WORLD_ENTITY_ENTITYCHUNK_H_ */

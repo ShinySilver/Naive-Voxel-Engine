@@ -8,6 +8,7 @@
 #include "entity.h"
 
 #include "glm/glm/ext/matrix_transform.hpp"
+#include "glm/glm/gtc/matrix_inverse.inl"
 
 // internal function
 
@@ -27,6 +28,7 @@ void Entity::fastUpdate() {
     _extraRotation += (_location.rotation - _extraRotation) * FIXED_RENDER_TIME
                       / FIXED_TICK_TIME;
 
+    /*
     _normal_matrix = glm::mat3(glm::transpose(glm::inverse(
             glm::rotate(
                     glm::rotate(
@@ -35,6 +37,7 @@ void Entity::fastUpdate() {
                                     _extraRotation.x, glm::vec3(1.0f, 0.0f, 0.0f)),
                             _extraRotation.y, glm::vec3(0.0f, 1.0f, 0.0f)),
                     _extraRotation.z, glm::vec3(0.0f, 0.0f, 1.0f)))));
+    */
 }
 
 void Entity::fixedUpdate() {

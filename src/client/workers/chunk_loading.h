@@ -6,9 +6,9 @@
 #define IVY_CHUNK_LOADING_H
 
 
-#include "../common/utils/safe_queue.h"
-#include "../common/entities/entity.h"
-#include "chunk_cache.h"
+#include "../../common/utils/safe_queue.h"
+#include "../../common/entities/entity.h"
+#include "../utils/chunk_cache.h"
 
 namespace chunk_loading {
 
@@ -19,6 +19,7 @@ namespace chunk_loading {
      * TODO: Think about a way to share 'em with the client without exposing them.
      */
     extern SafeQueue<ChunkCacheEntry *> preloading_queue;
+    extern SafeQueue<ChunkPos *> cascading_loading_queue;
     extern SafeQueue<Entity *> loading_queue;
     extern SafeQueue<Entity *> unloading_queue;
 

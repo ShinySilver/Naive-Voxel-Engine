@@ -16,6 +16,7 @@
 #include "glm/glm/vec3.hpp"
 #include "glm/glm/ext/matrix_float4x4.hpp"
 #include "loguru.hpp"
+#include "glm/glm/gtc/matrix_inverse.inl"
 
 #include <vector>
 
@@ -34,20 +35,10 @@ EntityChunk::EntityChunk(Mesh *mesh, Location loc) :
 
 void EntityChunk::preload() {
     //std::cout << "Preloading Chunk.\n";
-
-    // Read our .obj file
-    //std::vector<glm::vec3> vertices;
-    //std::vector<glm::vec3> colors;
-    //loadOBJ("resources/models/example/cube.obj", vertices, uvs, normals);
-    //glm::vec3 chunk_pos = grid::location_to_chunk_pos(getLocation());
-    //std::cout << "Meshing chunk at " << int(chunk_pos.x) << "; "
-    //          << int(chunk_pos.y) << "; "
-    //          << int(chunk_pos.z) << "...\n";
-    //_mesh = GreedyMesher::greedyMesh(_chunk);
 }
 
 void EntityChunk::load() {
-    if(_is_loaded){
+    if (_is_loaded) {
         LOG_S(1) << "What the hell bro? You are trying to load an already loaded chunk!";
         return;
     }
@@ -56,7 +47,7 @@ void EntityChunk::load() {
     glGenVertexArrays(1, &vertexArrayID);
     glBindVertexArray(vertexArrayID);
 
-    if (active_instances==0) {
+    if (active_instances == 0) {
         // The 1st time, create and compile our GLSL program from the shaders
         LOG_S(1) << "Loading shaders...";
         program_ID = LoadShaders("resources/shaders/chunkColor/chunkColor.vert",
@@ -96,17 +87,25 @@ void EntityChunk::load() {
     //std::cout << "Done preloading Chunk.\n";
 }
 
-void EntityChunk::draw(glm::mat4 &base, const glm::vec3 &light_pos, const glm::vec3 &view_pos) {
+void EntityChunk::draw(glm::mat4 &projection_matrix, const glm::vec3 &light_pos, const glm::vec3 &view_pos) {
+
+    if(_mesh->vertices.size()==0) return;
 
     // shader program
     glUseProgram(program_ID);
 
     // uniforms
-    auto MVP = glm::rotate(glm::rotate(glm::rotate(
-                                               glm::translate(base, _extraPosition),
-                                               _extraRotation.x, glm::vec3(1.0f, 0.0f, 0.0f)),
-                                       _extraRotation.y, glm::vec3(0.0f, 1.0f, 0.0f)),
-                           _extraRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+    auto MV = glm::rotate(glm::rotate(glm::rotate(
+                                              glm::translate(glm::mat4(glm::mat4(1.0f)), _extraPosition),
+                                              _extraRotation.x, glm::vec3(1.0f, 0.0f, 0.0f)),
+                                      _extraRotation.y, glm::vec3(0.0f, 1.0f, 0.0f)),
+                          _extraRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+    auto MVP = projection_matrix * MV;
+
+    // normals
+    // we are only doing translation and rotation, and thus transpose and inverse are not needed
+    _normal_matrix = glm::mat3(MV);
 
     glUniformMatrix4fv(matrix_ID, 1, GL_FALSE, glm::value_ptr(MVP));
     glUniformMatrix3fv(normal_mat_ID, 1, GL_FALSE, glm::value_ptr(_normal_matrix));
@@ -160,7 +159,7 @@ void EntityChunk::draw(glm::mat4 &base, const glm::vec3 &light_pos, const glm::v
 
 void EntityChunk::unload() {
     active_instances--;
-    if(active_instances==0){
+    if (active_instances == 0) {
         glDeleteProgram(program_ID);
     }
     glDeleteVertexArrays(1, &vertexArrayID);

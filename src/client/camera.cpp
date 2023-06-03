@@ -6,14 +6,21 @@
  */
 
 #include "camera.h"
+#include "client.h"
 #include "../common/utils/positioning.h"
 
-#include <GLFW/glfw3.h>
-#include <glm/glm/vec3.hpp>
-#include <glm/glm/ext/matrix_transform.hpp>
+#include "GLFW/glfw3.h"
+#include "glm/glm/vec3.hpp"
+#include "glm/glm/ext/matrix_transform.hpp"
 
 #include <cmath>
 #include <mutex>
+
+#if MINECRAFT_LIKE_CAMERA == true
+#define CONTROL_MODIFIER *glm::vec3(1,0,1)
+#else
+#define CONTROL_MODIFIER
+#endif
 
 namespace camera {
     namespace {
@@ -34,7 +41,7 @@ namespace camera {
         const double currentTime = glfwGetTime();
         const float deltaTime = float(currentTime - lastTime);
 
-		const float movement_delta = deltaTime * _speedModifier;
+        const float movement_delta = deltaTime * _speedModifier;
 
         // Lock location mutex
         _location_mutex.lock();
@@ -42,28 +49,29 @@ namespace camera {
         // Move forward
         if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window,
                                                                         GLFW_KEY_W) == GLFW_PRESS) {
-            _location.position += _direction * deltaTime * _speedModifier;
+            _location.position += _direction CONTROL_MODIFIER * deltaTime * _speedModifier;
         }
         // Move backward
         if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS || glfwGetKey(window,
                                                                           GLFW_KEY_S) == GLFW_PRESS) {
-            _location.position -= _direction * deltaTime * _speedModifier;
+            _location.position -= _direction CONTROL_MODIFIER * deltaTime * _speedModifier;
         }
         // Strafe _right
         if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS || glfwGetKey(window,
                                                                            GLFW_KEY_D) == GLFW_PRESS) {
-            _location.position += _right * deltaTime * _speedModifier;
+            _location.position += _right CONTROL_MODIFIER * deltaTime * _speedModifier;
         }
         // Strafe left
         if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS || glfwGetKey(window,
                                                                           GLFW_KEY_A) == GLFW_PRESS) {
-            _location.position -= _right * deltaTime * _speedModifier;
+            _location.position -= _right CONTROL_MODIFIER * deltaTime * _speedModifier;
         }
         // Custom:
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
             _location.position[1] += 1.0f * deltaTime * _speedModifier;
         }
-        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
+            glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
             _location.position[1] -= 1.0f * deltaTime * _speedModifier;
         }
 

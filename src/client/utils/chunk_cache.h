@@ -7,17 +7,18 @@
 
 #include <bits/stdc++.h>
 #include "glm/glm/vec3.hpp"
-#include "../common/utils/positioning.h"
-#include "../common/entities/entity_chunk.h"
-#include "utils/meshing/mesh.h"
-#include "client.h"
+#include "../../common/utils/positioning.h"
+#include "../../common/entities/entity_chunk.h"
+#include "meshing/mesh.h"
+#include "../client.h"
 
-#define CACHE_WIDTH (VIEW_DISTANCE * 2 + 1)
+#define CACHE_BORDER_SIZE 1
+#define CACHE_WIDTH ((VIEW_DISTANCE + CACHE_BORDER_SIZE) * 2 + 1)
 
 namespace chunk_cache {
     typedef struct ChunkCacheEntry {
         // Chunk identifier
-        ChunkPos position;
+        ChunkPos position{FLT_MAX};
 
         // Content of this cache cell
         EntityChunk *entity = 0;
@@ -25,12 +26,14 @@ namespace chunk_cache {
         // Plain chunk data
         Chunk *chunk_data = 0;
 
+        // The pos of this chunk the last time it was explored by the cascading worldgen
+        ChunkPos last_valid_pos = glm::vec3();
+
         // Flags
         bool is_air = false;
         bool is_awaiting_voxels = false;
         bool is_awaiting_mesh = false;
-        bool is_face_obstructing[6] = {false};
-        short meshing_readiness = 6; // ready to be meshed when down to 0
+        bool in_processing = false;
     } ChunkCacheEntry;
 
     namespace {
