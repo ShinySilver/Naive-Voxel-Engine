@@ -7,7 +7,7 @@
 #include "generator.h"
 #include "../client/utils/meshing/greedy_mesher.h"
 #include "../common/world/chunk.h"
-#include "../common/world/voxels.h"
+#include "../common/world/voxel.h"
 #include "../common/entities/entity_chunk.h"
 
 #define UNDER_CULLING_RATE 1
@@ -41,11 +41,11 @@ namespace generator {
                 }
                 for (int dy = 0; dy < h - cell_coordinate.y * CHUNK_SIZE; ++dy) {
                     if (cell_coordinate.y * CHUNK_SIZE + dy < h - 5) {
-                        chunk->set(dx, dy, dz, VOXEL_STONE);
+                        chunk->set(dx, dy, dz, Voxel::stone());
                     } else if (cell_coordinate.y * CHUNK_SIZE + dy < h - 1) {
-                        chunk->set(dx, dy, dz, VOXEL_DIRT);
+                        chunk->set(dx, dy, dz, Voxel::dirt());
                     } else {
-                        chunk->set(dx, dy, dz, VOXEL_GRASS);
+                        chunk->set(dx, dy, dz, Voxel::grass());
                     }
                 }
             }

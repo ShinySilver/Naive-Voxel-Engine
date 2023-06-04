@@ -1,6 +1,6 @@
 
 #include "basic_mesher.h"
-#include "../../../common/world/voxels.h"
+#include "../../../common/world/voxel.h"
 
 #include <tuple>
 #include <ranges>
@@ -8,8 +8,7 @@
 
 constexpr float offset = -CHUNK_SIZE * VOXEL_SIZE / 2.0f;
 constexpr float delta = VOXEL_SIZE / 2.0f;
-auto average_duration = std::chrono::duration<double> (0);
-double count = 0;
+
 
 namespace BasicMesher
 {
@@ -20,7 +19,7 @@ namespace BasicMesher
 			for (int y = 0; y < CHUNK_WIDTH; ++y) {
 				for (int z = 0; z < CHUNK_HEIGHT; ++z) {
 
-					if (*chunk.get(x, y, z) == VOXEL_AIR) {
+					if (!Voxel::is_visible(chunk.get(x, y, z))) {
 						continue;
 					}
 
@@ -30,9 +29,9 @@ namespace BasicMesher
 					const auto y2 = y + delta;
 					const auto z1 = z - delta;
 					const auto z2 = z + delta;
-					const auto voxel = *chunk.get(x, y, z);
+					const auto voxel = chunk.get(x, y, z);
 
-					if ((x == 0) || (*chunk.get(x - 1, y, z) == VOXEL_AIR))
+					if (x == 0 || Voxel::is_transparent(chunk.get(x - 1, y, z)))
 					{
 						mesh->vertices.emplace_back(glm::vec3(x1, y1, z1));
 						mesh->vertices.emplace_back(glm::vec3(x1, y1, z2));
@@ -45,7 +44,7 @@ namespace BasicMesher
 						}
 					}
 
-					if ((x == CHUNK_WIDTH - 1) || (*chunk.get(x + 1, y, z) == VOXEL_AIR))
+					if (x == CHUNK_WIDTH - 1 || Voxel::is_transparent(chunk.get(x + 1, y, z)))
 					{
 						mesh->vertices.emplace_back(glm::vec3(x2, y1, z1));
 						mesh->vertices.emplace_back(glm::vec3(x2, y2, z1));
@@ -58,7 +57,7 @@ namespace BasicMesher
 						}
 					}
 
-					if ((y == 0) || (*chunk.get(x, y - 1, z) == VOXEL_AIR))
+					if (y == 0 || Voxel::is_transparent(chunk.get(x, y - 1, z)))
 					{
 						mesh->vertices.emplace_back(glm::vec3(x1, y1, z1));
 						mesh->vertices.emplace_back(glm::vec3(x2, y1, z1));
@@ -71,7 +70,7 @@ namespace BasicMesher
 						}
 					}
 
-					if ((y == CHUNK_WIDTH - 1) || (*chunk.get(x, y + 1, z) == VOXEL_AIR))
+					if (y == CHUNK_WIDTH - 1 || Voxel::is_transparent(chunk.get(x, y + 1, z)))
 					{
 						mesh->vertices.emplace_back(glm::vec3(x1, y2, z1));
 						mesh->vertices.emplace_back(glm::vec3(x1, y2, z2));
@@ -84,7 +83,7 @@ namespace BasicMesher
 						}
 					}
 
-					if ((z == 0) || (*chunk.get(x, y, z - 1) == VOXEL_AIR))
+					if (z == 0 || Voxel::is_transparent(chunk.get(x, y, z - 1)))
 					{
 						mesh->vertices.emplace_back(glm::vec3(x1, y1, z1));
 						mesh->vertices.emplace_back(glm::vec3(x1, y2, z1));
@@ -97,7 +96,7 @@ namespace BasicMesher
 						}
 					}
 
-					if ((z == CHUNK_HEIGHT - 1) || (*chunk.get(x, y, z + 1) == VOXEL_AIR))
+					if (z == CHUNK_HEIGHT - 1 || Voxel::is_transparent(chunk.get(x, y, z + 1)))
 					{
 						mesh->vertices.emplace_back(glm::vec3(x1, y1, z2));
 						mesh->vertices.emplace_back(glm::vec3(x2, y1, z2));

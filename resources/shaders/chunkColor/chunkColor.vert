@@ -2,11 +2,11 @@
 
 // inputs
 layout (location = 0) in vec3 vert_position;
-layout (location = 1) in vec3 vert_color;
+layout (location = 1) in uint vert_color;
 layout (location = 2) in vec3 vert_normal;
 
 // outputs
-out vec3 frag_color;
+out uint frag_color;
 out vec3 frag_normal;
 out vec3 frag_position;
 out vec3 light_dir;
@@ -16,7 +16,7 @@ uniform mat4 MVP;
 uniform mat3 normal_mat;
 uniform vec3 light_position;
 
-void main() {	
+void main() {
 
 	// computing vertex position
 	gl_Position =  MVP * vec4(vert_position, 1);

@@ -13,6 +13,7 @@
 #include "../utils/positioning.h"
 #include "../world/chunk.h"
 
+#include "glad/glad.h"
 #include "glm/glm/vec3.hpp"
 #include "glm/glm/ext/matrix_float4x4.hpp"
 #include "loguru.hpp"
@@ -74,7 +75,7 @@ void EntityChunk::load() {
     // 2nd attribute, colors
     glGenBuffers(1, &colorBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
-    glBufferData(GL_ARRAY_BUFFER, _mesh->colors.size() * sizeof(Color),
+    glBufferData(GL_ARRAY_BUFFER, _mesh->colors.size() * sizeof(Voxel::Voxel),
                  _mesh->colors.data(), GL_STATIC_DRAW);
 
     // 3rd attribute, normals
@@ -129,11 +130,10 @@ void EntityChunk::draw(glm::mat4 &projection_matrix, const glm::vec3 &light_pos,
     // 2nd attribute buffer : colors
     glEnableVertexAttribArray(1);
     glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
-    glVertexAttribPointer(1,    // attribute
-                          3,    // size 3, rgb
-                          GL_FLOAT,    // type
-                          GL_FALSE,    // normalized?
-                          0,    // stride
+    glVertexAttribIPointer(1,   // attribute, sent as integer to gpu
+                          1,    // 4xu8 = 1xu32, rgba
+                          GL_UNSIGNED_INT,    // type
+                          sizeof(Voxel::Voxel),    // stride
                           (void *) 0    // array buffer offset
     );
 

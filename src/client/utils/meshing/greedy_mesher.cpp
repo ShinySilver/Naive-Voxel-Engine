@@ -11,7 +11,7 @@
 #include <vector>
 #include "mesh.h"
 #include "greedy_mesher.h"
-#include "../../../common/world/voxels.h"
+#include "../../../common/world/voxel.h"
 
 #define CENTER_CHUNKS
 
@@ -45,8 +45,9 @@ namespace GreedyMesher {
          * @param backFace
          */
         void quad(glm::vec3 bottomLeft, glm::vec3 topLeft, glm::vec3 topRight,
-                  glm::vec3 bottomRight, int width, int height, Color *color,
-                  Mesh *mesh, bool backFace) {
+                  glm::vec3 bottomRight, int width, int height,
+				  const Voxel::Voxel& color,
+                  Mesh* mesh, bool backFace) {
             //std::cout << "QUAD!\n";
 
             glm::vec3 vertices[4];
@@ -90,7 +91,7 @@ namespace GreedyMesher {
             // generate mesh
             for (int i : indexes) {
                 mesh->vertices.emplace_back(vertices[i]);
-                mesh->colors.emplace_back(*color);
+                mesh->colors.emplace_back(color);
             }
             for(int i=0; i<3; ++i) {
                 mesh->normals.emplace_back(normal1);
@@ -101,7 +102,7 @@ namespace GreedyMesher {
         }
     } // End of private namespace
 
-    Mesh *mesh(Chunk &chunk, Chunk *neighbours) {
+    Mesh *mesh(const Chunk &chunk, const Chunk *neighbours) {
 
         Mesh *mesh = new Mesh();
 
@@ -120,12 +121,12 @@ namespace GreedyMesher {
          * We create a mask - this will contain the groups of matching voxel faces
          * as we proceed through the chunk in 6 directions - once for each face.
          */
-        Color *mask[CHUNK_WIDTH * CHUNK_HEIGHT];
+		Voxel::Voxel mask[CHUNK_WIDTH * CHUNK_HEIGHT];
 
         /*
          * These are just working variables to hold two faces during comparison.
          */
-        Color *voxelFace, *voxelFace1;
+		Voxel::Voxel voxelFace, voxelFace1;
 
         /**
 		 * We start with the lesser-spotted bool for-loop (also known as the old flippy floppy).
@@ -189,10 +190,10 @@ namespace GreedyMesher {
                              * Here we retrieve two voxel faces for comparison.
                              */
                             voxelFace =
-                                    (x[d] >= 0) ? chunk.get(x[0], x[1], x[2]) : nullptr;
+                                    (x[d] >= 0) ? chunk.get(x[0], x[1], x[2]) : Voxel::air();
                             voxelFace1 =
                                     (x[d] < CHUNK_WIDTH - 1) ?
-                                    chunk.get(x[0] + q[0], x[1] + q[1], x[2] + q[2]) : nullptr;
+                                    chunk.get(x[0] + q[0], x[1] + q[1], x[2] + q[2]) : Voxel::air();
                             /*
 							 * Note that we're using the equals function in the voxel face class
 							 * here, which lets the faces be compared based on any number of
@@ -201,12 +202,12 @@ namespace GreedyMesher {
 							 * Also, we choose the face to add to the mask depending on whether
 							 * we're moving through on a backface or not.
                              */
-                            mask[n++] =
-                                    ((voxelFace != nullptr && voxelFace1 != nullptr
-                                      && (*voxelFace==*voxelFace1 ||
-                                          *voxelFace!=VOXEL_AIR && *voxelFace1!=VOXEL_AIR))) ?
-                                    nullptr :
-                                    backFace ? voxelFace1 : voxelFace;
+							if (voxelFace == voxelFace1 && Voxel::is_visible(voxelFace)
+									&& Voxel::is_visible(voxelFace1)) {
+								mask[n++] = Voxel::air();
+							} else {
+                                mask[n++] = backFace ? voxelFace1 : voxelFace;
+							}
                         }
                     }
 
@@ -221,15 +222,15 @@ namespace GreedyMesher {
 
                         for (i = 0; i < CHUNK_WIDTH;) {
 
-                            if (mask[n] != nullptr) {
+                            if (Voxel::is_visible(mask[n])) {
 
                                 /*
                                  * We compute the width
                                  */
                                 for (w = 1;
                                      i + w < CHUNK_WIDTH
-                                     && mask[n + w] != nullptr
-                                     && *mask[n + w]==*mask[n];
+                                     && Voxel::is_visible(mask[n + w])
+                                     && mask[n + w] == mask[n];
                                      w++) {
                                 }
 
@@ -242,8 +243,8 @@ namespace GreedyMesher {
 
                                     for (k = 0; k < w; k++) {
 
-                                        if (mask[n + k + h * CHUNK_WIDTH] == nullptr
-                                            || *mask[n + k + h * CHUNK_WIDTH]!=*mask[n]) {
+                                        if (Voxel::is_visible(mask[n + k + h * CHUNK_WIDTH])
+                                            || mask[n + k + h * CHUNK_WIDTH] != mask[n]) {
                                             done = true;
                                             break;
                                         }
@@ -258,7 +259,7 @@ namespace GreedyMesher {
                                  * Here we check the "transparent" attribute in the VoxelFace class
 								 * to ensure that we don't mesh any culled faces.
                                  */
-                                if (*mask[n]!=VOXEL_AIR) {
+                                if (!Voxel::is_transparent(mask[n])) {
                                     /*
                                      * Add quad
                                      */
@@ -299,12 +300,8 @@ namespace GreedyMesher {
                                 /*
                                  * We zero out the mask
                                  */
-                                for (l = 0; l < h; ++l) {
-
-                                    for (k = 0; k < w; ++k) {
-                                        mask[n + k + l * CHUNK_WIDTH] = nullptr;
-                                    }
-                                }
+								std::memset(mask, Voxel::to_int(Voxel::air()),
+										CHUNK_WIDTH * CHUNK_HEIGHT);
 
                                 /*
                                  * And then finally increment the counters and continue

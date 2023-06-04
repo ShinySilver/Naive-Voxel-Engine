@@ -1,7 +1,8 @@
 #version 450 core
 
 // inputs
-in vec3 frag_color;
+in flat uint frag_color;
+double count = 0;
 in vec3 frag_normal;
 in vec3 frag_position;
 in vec3 light_dir;
@@ -28,6 +29,6 @@ void main() {
 	vec3 reflect_dir = reflect(-light_dir, frag_normal);
 	float specular = specular_factor * pow(max(dot(view_dir, reflect_dir), 0.0), 32);
 
-	color = vec4(frag_color * (ambient + diffuse + specular) * light_color, 1.0);
+	color = unpackUnorm4x8(frag_color) * vec4((ambient + diffuse + specular) * light_color, 1.0);
 }
 

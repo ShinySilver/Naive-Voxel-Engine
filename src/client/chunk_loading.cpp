@@ -9,6 +9,7 @@
 #include "client.h"
 #include "chunk_cache.h"
 #include "utils/meshing/greedy_mesher.h"
+#include "utils/meshing/basic_mesher.h"
 #include "../common/utils/direction.h"
 
 namespace chunk_loading {
@@ -116,6 +117,7 @@ namespace chunk_loading {
                       << entry->position.y << ";"
                       << entry->position.z << "";
             Mesh *mesh = GreedyMesher::mesh(*entry->chunk_data, nullptr);
+//			Mesh* mesh = BasicMesher::mesh(*entry->chunk_data);
 #if KEEP_CHUNKS_DATA_IN_MEMORY == false
             delete (entry->chunk_data);
             entry->chunk_data = nullptr;

@@ -22,7 +22,7 @@
  */
 namespace GreedyMesher {
 
-    Mesh* mesh(Chunk& chunk, Chunk *neighbours);
+    Mesh* mesh(const Chunk& chunk, const Chunk *neighbours);
 
 } //namespace GreedyMesher
 

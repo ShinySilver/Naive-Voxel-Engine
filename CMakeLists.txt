@@ -19,7 +19,7 @@ add_executable(iVy ${SRC_FILES} src/client/client_networking.cpp
 	src/client/utils/meshing/mesh.h src/common/world/chunk.h
 	src/common/utils/positioning.tcc src/client/utils/colors.h
 	src/client/utils/meshing/greedy_mesher.cpp
-	src/client/utils/meshing/basic_mesher.cpp src/common/world/voxels.h src/common/utils/direction.h)
+	src/client/utils/meshing/basic_mesher.cpp src/common/world/voxel.h src/common/utils/direction.h)
 target_link_libraries(iVy glfw pthread dl freetype)
 target_compile_options(iVy PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
 target_link_options(iVy PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
