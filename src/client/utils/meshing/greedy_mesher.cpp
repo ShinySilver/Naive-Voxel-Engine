@@ -173,7 +173,11 @@ namespace GreedyMesher {
                  * We move through the dimension from front to back
                  * Previously, we had -1 -> CHUNK_WIDTH. We made the modification to remove chunk borders
                  */
+                #if MESH_CHUNK_BORDER
+                for (x[d] = -1; x[d] < CHUNK_WIDTH;) {
+                #else
                 for (x[d] = 0; x[d] < CHUNK_WIDTH-1;) {
+                #endif
 
                     /*
                      * -------------------------------------------------------------------

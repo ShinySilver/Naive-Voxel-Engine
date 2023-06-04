@@ -7,6 +7,7 @@
 #include <loguru.hpp>
 
 #include "context.h"
+#include "client.h"
 
 namespace context {
     namespace {

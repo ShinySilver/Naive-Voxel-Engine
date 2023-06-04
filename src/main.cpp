@@ -5,7 +5,7 @@
 int main(int argc, char** argv) {
 
 	/**
-	 * Setup logs
+	 * Setting up the logs
 	 */
 	loguru::init(argc, argv);
     loguru::g_stderr_verbosity = 3; // 6 for high verbosity, 2 for standard output
@@ -13,12 +13,12 @@ int main(int argc, char** argv) {
 	//loguru::add_file("readable.log", loguru::Append, loguru::Verbosity_INFO);
 
     /**
-     * Starting the server.
+     * Starting the server. Not blocking.
      */
     server::start();
 
 	/**
-	 * Start the client. Blocking.
+	 * Start the client. Blocking, since the client need the main thread for OpenGL.
 	 */
 	client::tick();
 

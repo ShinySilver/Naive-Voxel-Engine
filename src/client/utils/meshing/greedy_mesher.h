@@ -14,8 +14,9 @@
 #include "mesh.h"
 
 #define VOXEL_SIZE (1.0f)
-#define CHUNK_WIDTH  CHUNK_SIZE
-#define CHUNK_HEIGHT CHUNK_SIZE
+#define CHUNK_WIDTH  CHUNK_DATA_SIZE
+#define CHUNK_HEIGHT CHUNK_DATA_SIZE
+#define MESH_CHUNK_BORDER false
 
 /*
  *

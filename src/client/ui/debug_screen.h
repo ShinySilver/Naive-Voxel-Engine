@@ -103,7 +103,7 @@ namespace debug_screen{
         debug_font.renderText(
                 "avg_total_frame_duration=" +
                 std::to_string(int(round(stats::avg_frame_duration / CLOCKS_PER_SEC * 1000))) + " ms / "
-                + std::to_string(int(round(1 / (stats::avg_frame_duration / CLOCKS_PER_SEC)))) + " FPS",
+                + std::to_string(int(round(1. / (stats::avg_frame_duration / CLOCKS_PER_SEC)))) + " FPS",
                 0.0125, 0.38, 0.4, colors::PINK);
 
         debug_font.renderText(
