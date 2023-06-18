@@ -18,7 +18,7 @@ file(GLOB_RECURSE SRC_FILES
 
 include_directories(includes)
 
-add_executable(iVy ${SRC_FILES} src/server/console.h src/server/console.cpp src/server/commands/help.h src/server/commands/stop.h src/server/commands/status.h src/server/commands/bench.h)
+add_executable(iVy ${SRC_FILES})
 target_compile_definitions(iVy PRIVATE LOGURU_WITH_STREAMS=1)
 target_link_libraries(iVy glfw pthread dl freetype)
 
