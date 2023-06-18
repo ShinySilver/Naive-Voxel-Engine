@@ -9,4 +9,5 @@ tags
 Testing
 *.vim
 *.log
+.editor*
 
