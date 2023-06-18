@@ -322,6 +322,7 @@ namespace loguru
 		Verbosity_0       =  0,
 
 		// Verbosity levels 1-9 are generally not written to stderr, but are written to file.
+		Verbosity_DEBUG   = +1,
 		Verbosity_1       = +1,
 		Verbosity_2       = +2,
 		Verbosity_3       = +3,
@@ -333,7 +334,7 @@ namespace loguru
 		Verbosity_9       = +9,
 
 		// Don not use higher verbosity levels, as that will make grepping log files harder.
-		Verbosity_MAX     = +9,
+		Verbosity_MAX     = +9
 	};
 
 	struct Message
@@ -371,7 +372,8 @@ namespace loguru
 	LOGURU_EXPORT extern bool      g_preamble_thread; // The logging thread
 	LOGURU_EXPORT extern bool      g_preamble_file; // The file from which the log originates from
 	LOGURU_EXPORT extern bool      g_preamble_verbose; // The verbosity field
-	LOGURU_EXPORT extern bool      g_preamble_pipe; // The pipe symbol right before the message
+    LOGURU_EXPORT extern bool      g_preamble_pipe; // The pipe symbol right before the message
+    LOGURU_EXPORT extern bool      g_preamble_explain; // The short line explaining the different log columns
 
 	// May not throw!
 	typedef void (*log_handler_t)(void* user_data, const Message& message);

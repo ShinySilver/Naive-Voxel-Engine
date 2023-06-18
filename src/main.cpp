@@ -1,26 +1,37 @@
+#if !SERVER_ONLY
 #include "client/client.h"
+#endif
 #include "server/server.h"
 #include <loguru.hpp>
 
 int main(int argc, char** argv) {
 
 	/**
-	 * Setup logs
+	 * Setting up the logs
 	 */
-	loguru::init(argc, argv);
-    loguru::g_stderr_verbosity = 3; // 6 for high verbosity, 2 for standard output
-    //loguru::add_file("latest_everything.log", loguru::Truncate, loguru::Verbosity_MAX);
-	//loguru::add_file("readable.log", loguru::Append, loguru::Verbosity_INFO);
+    loguru::g_stderr_verbosity = 3; // 6 for highest verbosity, 2 for standard output
+    #if SIMPLIFIED_LOGS
+    loguru::g_preamble_date = false;
+    loguru::g_preamble_time = false;
+    loguru::g_preamble_uptime = false;
+    loguru::g_preamble_file = false;
+    loguru::g_preamble_thread = false;
+    loguru::g_preamble_pipe = false;
+    loguru::g_preamble_explain = false;
+    #endif
+    loguru::init(argc, argv);
 
     /**
-     * Starting the server.
+     * Starting the server. Not blocking, unless an interactive session was started too.
      */
     server::start();
 
-	/**
-	 * Start the client. Blocking.
-	 */
-	client::tick();
+    /**
+     * Starting the client. Blocking.
+     */
+    #if !SERVER_ONLY
+    client::tick();
+    #endif
 
 	/**
 	 * Stopping the server after the client closing

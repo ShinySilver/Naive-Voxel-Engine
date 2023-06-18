@@ -7,7 +7,8 @@
 
 
 #include <functional>
-#include "../../common/entities/entity.h"
+#include "glm/glm/vec3.hpp"
+#include "../../common/world/chunk.h"
 
 #define GENERATION_WORKER_COUNT 3
 
@@ -29,15 +30,10 @@ namespace server_networking {
     void join();
 
     /**
-     * Apply for a modification of the given chunk
-     */
-    void queue_chunk_request();
-
-    /**
      * Apply for some world generation
      */
     void queue_chunk_generation_request(const glm::vec3 cell_coordinate,
-                                        std::function<void(Chunk *cell)> callback);
+                                        std::function<void(Voxel *)> callback);
 };
 
 

@@ -171,6 +171,7 @@ namespace loguru
 	bool      g_colorlogtostderr  = true;
 	unsigned  g_flush_interval_ms = 0;
 	bool      g_preamble          = true;
+    bool      g_preamble_explain  = true;
 
 	Verbosity g_internal_verbosity = Verbosity_0;
 
@@ -592,7 +593,7 @@ namespace loguru
 		}
 
 		if (g_stderr_verbosity >= Verbosity_INFO) {
-			if (g_preamble) {
+			if (g_preamble && g_preamble_explain) {
 				char preamble_explain[LOGURU_PREAMBLE_WIDTH];
 				print_preamble_header(preamble_explain, sizeof(preamble_explain));
 				if (g_colorlogtostderr && s_terminal_has_color) {
@@ -841,8 +842,10 @@ namespace loguru
 			} else if (verbosity == Verbosity_WARNING) {
 				name = "WARN";
 			} else if (verbosity == Verbosity_INFO) {
-				name = "INFO";
-			}
+                name = "INFO";
+            } else if (verbosity == Verbosity_DEBUG) {
+                name = "DEBUG";
+            }
 		}
 
 		return name;
@@ -1152,7 +1155,7 @@ namespace loguru
 			pos += snprintf(out_buff + pos, out_buff_size - pos, "%*s:line  ", LOGURU_FILENAME_WIDTH, "file");
 		}
 		if (g_preamble_verbose && pos < out_buff_size) {
-			pos += snprintf(out_buff + pos, out_buff_size - pos, "   v");
+			pos += snprintf(out_buff + pos, out_buff_size - pos, "    v");
 		}
 		if (g_preamble_pipe && pos < out_buff_size) {
 			pos += snprintf(out_buff + pos, out_buff_size - pos, "| ");
@@ -1179,12 +1182,12 @@ namespace loguru
 			file = filename(file);
 		}
 
-		char level_buff[6];
+		char level_buff[10];
 		const char* custom_level_name = get_verbosity_name(verbosity);
 		if (custom_level_name) {
-			snprintf(level_buff, sizeof(level_buff) - 1, "%s", custom_level_name);
+			snprintf(level_buff, sizeof(level_buff) - 1, "[%s] ", custom_level_name);
 		} else {
-			snprintf(level_buff, sizeof(level_buff) - 1, "% 4d", verbosity);
+			snprintf(level_buff, sizeof(level_buff) - 1, "[% 4d] ", verbosity);
 		}
 
 		long pos = 0;
@@ -1250,7 +1253,7 @@ namespace loguru
 						terminal_dim(),
 						message.preamble,
 						message.indentation,
-						verbosity == Verbosity_INFO ? terminal_reset() : "", // un-dim for info
+						verbosity == Verbosity_INFO ? terminal_dim() : "", // un-dim for info
 						message.prefix,
 						message.message,
 						terminal_reset());
@@ -1325,7 +1328,7 @@ namespace loguru
 	                       const char* prefix, const char* buff)
 	{
 		char preamble_buff[LOGURU_PREAMBLE_WIDTH];
-		print_preamble(preamble_buff, sizeof(preamble_buff), verbosity, file, line);
+		print_preamble(preamble_buff, sizeof(preamble_buff), verbosity>=1?Verbosity_DEBUG:verbosity, file, line);
 		auto message = Message{verbosity, file, line, preamble_buff, "", prefix, buff};
 		log_message(stack_trace_skip + 1, message, true, true);
 	}

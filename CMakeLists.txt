@@ -2,19 +2,26 @@ cmake_minimum_required(VERSION 3.19)
 project(iVy)
 
 set(CMAKE_CXX_STANDARD 20)
-
 set(dir ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${dir}/../build)
 
-include_directories(includes)
+add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+add_link_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
 
 file(COPY resources DESTINATION ${dir}/../build)
+file(GLOB_RECURSE SRC_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.tcc
+        libs/glad/glad.c
+        libs/loguru.cpp)
 
-add_definitions(-DLOGURU_WITH_STREAMS=1)
-file(GLOB_RECURSE SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
-add_executable(iVy ${SRC_FILES} src/client/workers/client_networking.cpp src/client/workers/client_networking.h src/server/workers/server_networking.cpp src/server/workers/server_networking.h src/client/workers/chunk_loading.cpp src/client/workers/chunk_loading.h src/client/utils/chunk_cache.h src/client/utils/meshing/mesh.h src/common/world/chunk.h src/common/utils/positioning.tcc src/client/utils/colors.h src/client/utils/meshing/greedy_mesher.cpp src/common/world/voxels.h src/common/utils/direction.h src/common/utils/stats.h src/client/ui/debug_screen.h)
+include_directories(includes)
+
+add_executable(iVy ${SRC_FILES} src/server/console.h src/server/console.cpp src/server/commands/help.h src/server/commands/stop.h src/server/commands/status.h src/server/commands/bench.h)
+target_compile_definitions(iVy PRIVATE LOGURU_WITH_STREAMS=1)
 target_link_libraries(iVy glfw pthread dl freetype)
-target_compile_options(iVy PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
-target_link_options(iVy PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
 
-target_sources(iVy PRIVATE libs/glad/glad.c libs/loguru.cpp)
+add_executable(iVy_server ${SRC_FILES})
+target_compile_definitions(iVy_server PRIVATE LOGURU_WITH_STREAMS=1 SERVER_ONLY=true SIMPLIFIED_LOGS=true)
+target_link_libraries(iVy_server glfw pthread dl freetype)
