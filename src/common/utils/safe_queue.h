@@ -54,13 +54,13 @@ public:
         return q.empty();
     }
 
-    void unlock_all(){
+    inline void unlock_all(){
         std::unique_lock<std::mutex> lock(m);
         timeout=true;
         c.notify_all();
     }
 
-    int size(){
+    inline int size(){
         std::unique_lock<std::mutex> lock(m);
         return (int)q.size();
     }

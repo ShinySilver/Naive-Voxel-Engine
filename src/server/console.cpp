@@ -1,4 +1,4 @@
-#include "loguru.hpp"
+#include "loguru/loguru.hpp"
 #include "server.h"
 
 #define _TABLE_SIZE 4

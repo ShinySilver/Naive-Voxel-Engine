@@ -7,17 +7,16 @@
 #include "../../common/utils/safe_queue.h"
 #include "../../common/utils/worker.h"
 #include "glm/glm/vec3.hpp"
-#include "loguru.hpp"
-#include "../../common/world/chunk.h"
+#include "loguru/loguru.hpp"
 
 namespace server_networking {
     namespace {
         struct ChunkGenRequest {
             const glm::vec3 cell_coordinate{};
-            std::function<void(Voxel * )> callback{};
+            std::function<void(void * )> callback{};
 
             ChunkGenRequest(glm::vec3 cell_coordinate,
-                            std::function<void(Voxel * )> callback) : cell_coordinate(cell_coordinate),
+                            std::function<void(void * )> callback) : cell_coordinate(cell_coordinate),
                                                                       callback(callback) {}
         };
 
@@ -59,7 +58,7 @@ namespace server_networking {
     }
 
     void queue_chunk_generation_request(const glm::vec3 cell_coordinate,
-                                        std::function<void(Voxel *)> callback) {
+                                        std::function<void(void *)> callback) {
         generation_queue.enqueue(new ChunkGenRequest(cell_coordinate, callback));
     }
 

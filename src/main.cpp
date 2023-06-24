@@ -2,7 +2,7 @@
 #include "client/client.h"
 #endif
 #include "server/server.h"
-#include <loguru.hpp>
+#include <loguru/loguru.hpp>
 
 int main(int argc, char** argv) {
 

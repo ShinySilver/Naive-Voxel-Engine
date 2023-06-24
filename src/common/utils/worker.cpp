@@ -2,7 +2,7 @@
 // Created by silverly on 21/11/2021.
 //
 
-#include <loguru.hpp>
+#include <loguru/loguru.hpp>
 
 #include "worker.h"
 

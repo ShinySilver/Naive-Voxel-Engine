@@ -4,7 +4,7 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <loguru.hpp>
+#include <loguru/loguru.hpp>
 
 #include "server.h"
 #include "worldgen/world.h"
@@ -45,13 +45,13 @@ namespace server {
                 world::tick();
 
                 // Measuring tick duration
-                int tick_duration_ns = (int) duration_cast<std::chrono::nanoseconds>(
+                int tick_duration_ns = (int) std::chrono::duration_cast<std::chrono::nanoseconds>(
                         std::chrono::high_resolution_clock::now() - tick_start_time).count();
                 total_tick_time += tick_duration_ns;
 
                 // Eventually updating stats
                 if (++tick_count % STATS_UPDATE_PERIOD_IN_TICKS == 0) {
-                    int time_elapsed_ns = (int) duration_cast<std::chrono::nanoseconds>(
+                    int time_elapsed_ns = (int) std::chrono::duration_cast<std::chrono::nanoseconds>(
                             std::chrono::high_resolution_clock::now() - tick_group_start_time).count();
                     tick_group_start_time = std::chrono::high_resolution_clock::now();
                     metrics::average_tick_time_ns = total_tick_time / STATS_UPDATE_PERIOD_IN_TICKS;
